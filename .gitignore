@@ -1,10 +1,12 @@
 # simulation
 work/
+work_exp/
 transcript
 vsim.wlf
 *.vcd
 *.wdb
 modelsim.ini
+*.pb
 
 # vivado
 .Xil/
@@ -13,6 +15,7 @@ modelsim.ini
 *.str
 vivado*.backup*
 xsim.dir/
+xsim.covdb/
 
 # os
 Thumbs.db

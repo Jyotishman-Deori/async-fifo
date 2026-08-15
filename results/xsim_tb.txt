@@ -1,0 +1,85 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.sv" into library work
+INFO: [VRFC 10-311] analyzing module sync_2ff
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.sv" into library work
+INFO: [VRFC 10-311] analyzing module async_fifo
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_async_fifo
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/async_fifo_sva.sv" into library work
+INFO: [VRFC 10-311] analyzing module async_fifo_sva
+Vivado Simulator 2020.2
+Copyright 1986-1999, 2001-2020 Xilinx, Inc. All Rights Reserved.
+Running: C:/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -debug typical -relax tb_async_fifo -s tb_snap 
+Multi-threading is on. Using 14 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.sv" Line 10. Module async_fifo_default doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.sv" Line 11. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.sv" Line 11. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.sv" Line 10. Module async_fifo_default doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.sv" Line 11. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.sv" Line 11. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.sync_2ff(WIDTH=5)
+Compiling module work.async_fifo_sva_default
+Compiling module work.async_fifo_default
+Compiling module work.tb_async_fifo
+Built simulation snapshot tb_snap
+
+****** Webtalk v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/xsim.dir/tb_snap/webtalk/xsim_webtalk.tcl -notrace
+INFO: [Common 17-206] Exiting Webtalk at Sun Aug 16 03:03:27 2026...
+
+****** xsim v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source xsim.dir/tb_snap/xsim_script.tcl
+# xsim {tb_snap} -autoloadwcfg -runall
+Vivado Simulator 2020.2
+Time resolution is 1 ps
+run -all
+=========================================================
+ async FIFO  --  DSIZE=8  ASIZE=4  depth=16
+=========================================================
+
+-- phase 1: wclk 7 ns, rclk 11 ns  (write fast, read slow)
+   phase 1: 5013 words written, all 5013 read back and checked
+
+-- phase 2: wclk 11 ns, rclk 7 ns  (write slow, read fast)
+   phase 2: 5002 words written, all 5002 read back and checked
+
+=========================================================
+ RESULTS
+=========================================================
+  words written              : 10015
+  words read and compared    : 10015
+  data mismatches            : 0
+  overflows                  : 0
+  underflows                 : 0
+  undrained words            : 0
+  ---- coverage ----
+  cycles with wfull high     : 12415
+  cycles with rempty high    : 12363
+  back-to-back writes        : 3031
+  concurrent read and write  : 3654
+---------------------------------------------------------
+ TEST PASSED
+=========================================================
+
+---- functional coverage (bound checker) ----
+  write interface  : 100.0 %
+  read interface   : 100.0 %
+  occupancy        : 100.0 %
+  concurrent access: 100.0 %
+---------------------------------------------
+$finish called at time : 275356500 ps : File "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.sv" Line 236
+exit
+INFO: [Common 17-206] Exiting xsim at Sun Aug 16 03:03:36 2026...

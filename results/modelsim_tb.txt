@@ -1,0 +1,70 @@
+Reading pref.tcl
+
+2020.1
+
+do run.do
+Error 133: Unable to remove directory "C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/work".
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+Start time: 03:03:12 on Aug 16,2026
+vlog -sv -work work ../rtl/sync_2ff.sv 
+-- Compiling module sync_2ff
+
+Top level modules:
+	sync_2ff
+End time: 03:03:13 on Aug 16,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+Start time: 03:03:13 on Aug 16,2026
+vlog -sv -work work ../rtl/async_fifo.sv 
+-- Compiling module async_fifo
+
+Top level modules:
+	async_fifo
+End time: 03:03:13 on Aug 16,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+Start time: 03:03:13 on Aug 16,2026
+vlog -sv -work work ../tb/tb_async_fifo.sv 
+-- Compiling module tb_async_fifo
+
+Top level modules:
+	tb_async_fifo
+End time: 03:03:13 on Aug 16,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+vsim -c -voptargs=""+acc"" work.tb_async_fifo 
+Start time: 03:03:13 on Aug 16,2026
+Loading sv_std.std
+Loading work.tb_async_fifo
+Loading work.async_fifo
+Loading work.sync_2ff
+=========================================================
+ async FIFO  --  DSIZE=8  ASIZE=4  depth=16
+=========================================================
+
+-- phase 1: wclk 7 ns, rclk 11 ns  (write fast, read slow)
+   phase 1: 5015 words written, all 5015 read back and checked
+
+-- phase 2: wclk 11 ns, rclk 7 ns  (write slow, read fast)
+   phase 2: 5002 words written, all 5002 read back and checked
+
+=========================================================
+ RESULTS
+=========================================================
+  words written              : 10017
+  words read and compared    : 10017
+  data mismatches            : 0
+  overflows                  : 0
+  underflows                 : 0
+  undrained words            : 0
+  ---- coverage ----
+  cycles with wfull high     : 12678
+  cycles with rempty high    : 12419
+  back-to-back writes        : 3025
+  concurrent read and write  : 3546
+---------------------------------------------------------
+ TEST PASSED
+=========================================================
+** Note: $finish    : ../tb/tb_async_fifo.sv(236)
+   Time: 276481500 ps  Iteration: 1  Instance: /tb_async_fifo
+End time: 03:03:14 on Aug 16,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0

@@ -10,7 +10,8 @@ I picked this after working on the AXI-Stream interfaces in my M.Tech project, w
 the PS and PL sides sit in different clock domains and I mostly got to rely on the
 handshake. I wanted to build the crossing itself rather than use one.
 
-**Status:** spec done, RTL in progress.
+**Status:** done. RTL, testbench, assertions and synthesis all run clean —
+numbers in [Results](#results), raw transcripts in [`results/`](results/).
 
 ---
 
@@ -69,6 +70,15 @@ module async_fifo #(
 
 Two files: `rtl/sync_2ff.sv` for the synchroniser, `rtl/async_fifo.sv` for everything
 else. The synchroniser is its own module mostly so it's obvious I didn't forget it.
+
+```
+rtl/           the design, and the only thing that gets synthesised
+tb/            testbench, plus the bound SVA and covergroup checker
+sim/           ModelSim and XSim run scripts
+synth/         Vivado latch and CDC check
+experiments/   deliberately broken variants, kept for what they showed
+results/       raw transcripts of every run quoted below
+```
 
 ---
 
@@ -129,37 +139,111 @@ gets pushed on the write side and popped and compared on the read side, with `wi
 `rinc` randomised so full and empty actually get reached rather than just being
 theoretically possible.
 
+Each phase ends by stopping the writes and reading until the FIFO is empty, so every
+word that went in is compared on the way out. Without that, a few hundred words are
+still sitting in the FIFO when the phase ends and never get checked.
+
+**A passing test proves nothing until you've seen it fail.** Before quoting any of the
+numbers below I broke the design on purpose and re-ran everything:
+
+| deliberate bug | what caught it |
+|---|---|
+| full compares with only the MSB inverted | occupancy check and scoreboard, within 500 ns |
+| same bug, under XSim | `a_no_overflow` fired: *occupancy 17 exceeds depth 16* |
+| Gray coding removed, binary pointers across the boundary | **nothing — it passed** |
+
+That last row is the interesting one and it has its own writeup in
+[`experiments/`](experiments/README.md). Short version: in RTL simulation every bit of
+a bus changes at the same instant, so the hazard Gray coding prevents does not exist to
+be found. I had to inject per-bit skew by hand before the difference showed up at all,
+and once it did, binary failed catastrophically while Gray never dropped a word.
+
 ---
 
 ## Running it
 
 ```bash
-# ModelSim (not on PATH by default)
+# functional testbench, ModelSim (not on PATH by default)
 export PATH="/c/intelFPGA_lite/20.1/modelsim_ase/win32aloem:$PATH"
 cd sim && vsim -c -do run.do
 
-# Latch and CDC check (Vivado, not on PATH by default)
+# same testbench plus assertions and functional coverage, Vivado XSim
+cd sim && ./run_xsim.sh
+
+# latch and CDC check
 export PATH="/c/Xilinx/Vivado/2020.2/bin:$PATH"
 vivado -mode batch -source synth/synth_check.tcl
+
+# the CDC encoding experiment (not the design)
+cd sim && vsim -c -do run_experiment.do
 ```
 
 ModelSim ASE can't do SVA or covergroups, so assertions and functional coverage run in
-Vivado XSim — same split I use in my M.Tech project.
+Vivado XSim — same split I use in my M.Tech project. The checker lives in
+`tb/async_fifo_sva.sv` and is `bind`-ed onto the DUT rather than written inside it, so
+nothing verification-only ends up in the synthesisable RTL.
 
 ---
 
 ## Results
 
-Measured numbers go here once it runs. Nothing goes in this table that I haven't
-actually seen in a transcript.
+Nothing in this table that I haven't actually seen in a transcript. Raw output for
+every row is in [`results/`](results/).
+
+**Functional testbench** — ModelSim ASE 20.1, `results/modelsim_tb.txt`
 
 | | |
 |---|---|
-| Clocks tested | _TBD_ |
-| Transactions passed | _TBD_ |
-| Assertion failures | _TBD_ |
-| Coverage bins hit | _TBD_ |
-| Latches inferred | _TBD_ |
+| Clock ratios tested | 7/11 ns and 11/7 ns, both directions |
+| Words written and compared | 10 017 |
+| Data mismatches | 0 |
+| Overflows / underflows | 0 / 0 |
+| Words left unchecked at end of phase | 0 |
+| Cycles at full / at empty | 12 678 / 12 419 |
+| Back-to-back writes | 3 025 |
+| Concurrent read and write | 3 546 |
+
+**Assertions and coverage** — Vivado XSim 2020.2, `results/xsim_tb.txt`
+
+| | |
+|---|---|
+| Words written and compared | 10 015 |
+| Assertion failures | 0, across 9 properties |
+| Write interface coverage | 100 % |
+| Read interface coverage | 100 % |
+| Occupancy coverage | 100 % (empty and full bins both hit) |
+| Concurrent access coverage | 100 % |
+
+**Synthesis** — Vivado 2020.2, `xc7z020clg400-1`, out of context, `results/synth_check.txt`
+
+| | |
+|---|---|
+| Errors / warnings / critical warnings | 0 / 0 / 0 |
+| Latches inferred | **0** |
+| Slice LUTs | 28 (20 logic, 8 distributed RAM) |
+| Slice registers | 40, all flip-flops |
+| Block RAM / DSP | 0 / 0 |
+
+The 16×8 memory landed in 8 LUTs as distributed RAM rather than a block RAM, which is
+what I'd expect at this size — a BRAM would be almost entirely empty.
+
+**What Vivado's CDC report says** — `synth/cdc_report.txt`
+
+```
+CDC-3  Info      2   1-bit synchronized with ASYNC_REG property
+CDC-6  Warning   2   Multi-bit synchronized with ASYNC_REG property
+```
+
+Both crossings found, both at depth 2, both covered by the asynchronous clock group.
+The CDC-6 warnings are expected and I'd be worried if they were missing: Vivado can see
+a multi-bit bus going into a two-flop synchroniser, which is normally a real bug, but it
+has no way to know the bus is Gray coded. Depth reading 2 on every row is the tool
+confirming it found the synchroniser rather than a bare crossing.
+
+One detail I didn't predict: the report sources the top pointer bit from `wbin_reg[4]`,
+not `wgray_reg[4]`. The MSB of a Gray code equals the MSB of the binary it came from, so
+`bin ^ (bin >> 1)` leaves that bit untouched and synthesis just dropped the redundant
+register.
 
 ---
 
