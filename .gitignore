@@ -1,0 +1,19 @@
+# simulation
+work/
+transcript
+vsim.wlf
+*.vcd
+*.wdb
+modelsim.ini
+
+# vivado
+.Xil/
+*.jou
+*.log
+*.str
+vivado*.backup*
+xsim.dir/
+
+# os
+Thumbs.db
+desktop.ini
