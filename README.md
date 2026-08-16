@@ -34,6 +34,10 @@ They fix different problems. Gray code does nothing about metastability. Synchro
 do nothing about multi-bit skew. Miss either one and the design is broken in a way that
 simulation may not show you.
 
+That last sentence turned out to be more literal than I meant it. I removed the Gray
+coding to see what would break, and the entire testbench still passed — see
+[`experiments/`](experiments/README.md).
+
 ---
 
 ## How it works
