@@ -35,3 +35,6 @@ NA/
 
 # intermediate render, make_pdf.py deletes it
 docs/_report_raw.pdf
+
+# personal interview notes, not part of the project
+interview-prep.md

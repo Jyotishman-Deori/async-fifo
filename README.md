@@ -276,18 +276,3 @@ reader drains them, and the totals come out exactly equal.
 
 Full writeup, including the CDC-10 I put in my own reset logic and had to fix, is in
 [`hw/`](hw/README.md).
-
----
-
-## Questions I should be able to answer
-
-If I can't answer one of these, that part of the design isn't finished yet.
-
-1. Why Gray code across the boundary instead of binary?
-2. What does a two-flop synchroniser fix, and what does it not fix?
-3. Why is the pointer one bit wider than the address?
-4. Why invert two bits for full and none for empty?
-5. Why use the next pointer value for the flags instead of the registered one?
-6. What is MTBF here, and when would a third flop be worth it?
-7. Can this FIFO overflow? Show why not.
-8. What breaks if the depth isn't a power of two?
