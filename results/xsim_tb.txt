@@ -8,18 +8,12 @@ INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Deskt
 INFO: [VRFC 10-311] analyzing module async_fifo_sva
 Vivado Simulator 2020.2
 Copyright 1986-1999, 2001-2020 Xilinx, Inc. All Rights Reserved.
-Running: C:/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -debug typical -relax tb_async_fifo -s tb_snap 
+Running: C:/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -debug typical -relax -timescale 1ns/1ps tb_async_fifo -s tb_snap 
 Multi-threading is on. Using 14 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
 Completed static elaboration
 Starting simulation data flow analysis
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.v" Line 13. Module async_fifo_default doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.v" Line 13. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.v" Line 13. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.v" Line 13. Module async_fifo_default doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.v" Line 13. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
-WARNING: [XSIM 43-4099] "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/sync_2ff.v" Line 13. Module sync_2ff(WIDTH=5) doesn't have a timescale but at least one module in design has a timescale.
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling module work.sync_2ff(WIDTH=5)
@@ -34,7 +28,7 @@ Built simulation snapshot tb_snap
     ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 
 source C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/xsim.dir/tb_snap/webtalk/xsim_webtalk.tcl -notrace
-INFO: [Common 17-206] Exiting Webtalk at Sun Aug 16 13:17:29 2026...
+INFO: [Common 17-206] Exiting Webtalk at Sun Aug 16 14:32:03 2026...
 
 ****** xsim v2020.2 (64-bit)
   **** SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
@@ -82,4 +76,4 @@ run -all
 ---------------------------------------------
 $finish called at time : 275356500 ps : File "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.sv" Line 236
 exit
-INFO: [Common 17-206] Exiting xsim at Sun Aug 16 13:17:35 2026...
+INFO: [Common 17-206] Exiting xsim at Sun Aug 16 14:32:09 2026...

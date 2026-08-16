@@ -1,7 +1,7 @@
 # Dual-Clock Asynchronous FIFO
 
 A FIFO that moves data between two clock domains that have no relationship to each
-other. RTL in Verilog-2001, verified with a SystemVerilog testbench — scoreboard,
+other. RTL in Verilog-2001, verified with a SystemVerilog testbench: scoreboard,
 assertions and functional coverage.
 
 Self-project. Jyotishman Deori (25M1186), M.Tech Electronic Systems, IIT Bombay.
@@ -10,8 +10,8 @@ I picked this after working on the AXI-Stream interfaces in my M.Tech project, w
 the PS and PL sides sit in different clock domains and I mostly got to rely on the
 handshake. I wanted to build the crossing itself rather than use one.
 
-**Status:** done. RTL, testbench, assertions and synthesis all run clean —
-numbers in [Results](#results), raw transcripts in [`results/`](results/).
+**Status:** done. RTL, testbench, assertions and synthesis all run clean. Numbers are
+in [Results](#results), raw transcripts in [`results/`](results/).
 
 ---
 
@@ -35,8 +35,8 @@ do nothing about multi-bit skew. Miss either one and the design is broken in a w
 simulation may not show you.
 
 That last sentence turned out to be more literal than I meant it. I removed the Gray
-coding to see what would break, and the entire testbench still passed — see
-[`experiments/`](experiments/README.md).
+coding to see what would break, and the entire testbench still passed. That got its own
+writeup in [`experiments/`](experiments/README.md).
 
 ---
 
@@ -54,7 +54,7 @@ coding to see what would break, and the entire testbench still passed — see
    rbin --> rgray -----[2FF sync into wclk]-----> wq2_rptr --> wfull
 ```
 
-Each pointer crosses once, in one direction. The binary counters never cross — only
+Each pointer crosses once, in one direction. The binary counters never cross. Only
 their Gray versions do.
 
 ```verilog
@@ -99,7 +99,7 @@ in both cases the pointers are otherwise equal.
 
 **Binary to Gray** is just `gray = bin ^ (bin >> 1)`.
 
-**Empty** is when the read pointer has caught up — every bit equal:
+**Empty** is when the read pointer has caught up, so every bit is equal:
 
 ```verilog
 rempty = (rgraynext == rq2_wptr);
@@ -123,7 +123,7 @@ go high in the same cycle the FIFO actually fills or empties instead of one cycl
 of the other pointer, so `wfull` can stay high for a moment after a read has already
 freed space, and `rempty` can stay high just after a write. The FIFO reports itself
 fuller or emptier than it really is. It never goes the other way, which is the only
-direction that would actually break something — it cannot overflow or underflow.
+direction that would actually break something. It cannot overflow or underflow.
 
 ---
 
@@ -159,7 +159,7 @@ numbers below I broke the design on purpose and re-ran everything:
 |---|---|
 | full compares with only the MSB inverted | occupancy check and scoreboard, within 500 ns |
 | same bug, under XSim | `a_no_overflow` fired: *occupancy 17 exceeds depth 16* |
-| Gray coding removed, binary pointers across the boundary | **nothing — it passed** |
+| Gray coding removed, binary pointers across the boundary | **nothing, it passed** |
 
 That last row is the interesting one and it has its own writeup in
 [`experiments/`](experiments/README.md). Short version: in RTL simulation every bit of
@@ -188,7 +188,7 @@ cd sim && vsim -c -do run_experiment.do
 ```
 
 ModelSim ASE can't do SVA or covergroups, so assertions and functional coverage run in
-Vivado XSim — same split I use in my M.Tech project. The checker lives in
+Vivado XSim, the same split I use in my M.Tech project. The checker lives in
 `tb/async_fifo_sva.sv` and is `bind`-ed onto the DUT rather than written inside it, so
 nothing verification-only ends up in the synthesisable RTL.
 
@@ -196,63 +196,48 @@ nothing verification-only ends up in the synthesisable RTL.
 
 ## Results
 
-Nothing in this table that I haven't actually seen in a transcript. Raw output for
-every row is in [`results/`](results/).
+Every number below came out of a transcript in [`results/`](results/). Nothing here is
+estimated or rounded up.
 
-**Functional testbench** — ModelSim ASE 20.1, `results/modelsim_tb.txt`
+The functional testbench on ModelSim ASE 20.1 put 10 017 words through, both clock
+ratios, and compared every one of them on the way out:
 
 | | |
 |---|---|
-| Clock ratios tested | 7/11 ns and 11/7 ns, both directions |
-| Words written and compared | 10 017 |
 | Data mismatches | 0 |
 | Overflows / underflows | 0 / 0 |
-| Words left unchecked at end of phase | 0 |
-| Cycles at full / at empty | 12 678 / 12 419 |
+| Words left unchecked | 0 |
+| Cycles spent full / empty | 12 678 / 12 419 |
 | Back-to-back writes | 3 025 |
 | Concurrent read and write | 3 546 |
 
-**Assertions and coverage** — Vivado XSim 2020.2, `results/xsim_tb.txt`
+The same testbench under XSim with the assertions and covergroups bound on ran 10 015
+words, no assertion failures across the nine properties, and 100% on all four
+covergroups. The word counts differ by two between the simulators because the stimulus
+is randomised and the two implementations of `$urandom` don't produce the same stream
+from the same seed. Both transcripts are in `results/`.
 
-| | |
-|---|---|
-| Words written and compared | 10 015 |
-| Assertion failures | 0, across 9 properties |
-| Write interface coverage | 100 % |
-| Read interface coverage | 100 % |
-| Occupancy coverage | 100 % (empty and full bins both hit) |
-| Concurrent access coverage | 100 % |
+Synthesis for `xc7z020clg400-1`, out of context: 0 errors, 0 warnings, **0 latches**,
+28 slice LUTs (20 logic, 8 as distributed RAM) and 40 flip-flops. The 16x8 memory went
+to distributed RAM rather than a block RAM, which is what I expected at this size. A
+BRAM would have sat almost entirely empty.
 
-**Synthesis** — Vivado 2020.2, `xc7z020clg400-1`, out of context, `results/synth_check.txt`
-
-| | |
-|---|---|
-| Errors / warnings / critical warnings | 0 / 0 / 0 |
-| Latches inferred | **0** |
-| Slice LUTs | 28 (20 logic, 8 distributed RAM) |
-| Slice registers | 40, all flip-flops |
-| Block RAM / DSP | 0 / 0 |
-
-The 16×8 memory landed in 8 LUTs as distributed RAM rather than a block RAM, which is
-what I'd expect at this size — a BRAM would be almost entirely empty.
-
-**What Vivado's CDC report says** — `synth/cdc_report.txt`
+Vivado's CDC report finds both crossings, at depth 2, with the ASYNC_REG property and
+the asynchronous clock group exception applied:
 
 ```
 CDC-3  Info      2   1-bit synchronized with ASYNC_REG property
 CDC-6  Warning   2   Multi-bit synchronized with ASYNC_REG property
 ```
 
-Both crossings found, both at depth 2, both covered by the asynchronous clock group.
-The CDC-6 warnings are expected and I'd be worried if they were missing: Vivado can see
-a multi-bit bus going into a two-flop synchroniser, which is normally a real bug, but it
-has no way to know the bus is Gray coded. Depth reading 2 on every row is the tool
-confirming it found the synchroniser rather than a bare crossing.
+The CDC-6 warnings are correct and I'd be more worried if they were missing. Vivado can
+see a multi-bit bus going into a two-flop synchroniser, which is usually a real bug, and
+nothing tells it this particular bus is Gray coded.
 
-One detail I didn't predict: the report sources the top pointer bit from `wbin_reg[4]`,
-not `wgray_reg[4]`. The MSB of a Gray code equals the MSB of the binary it came from, so
-`bin ^ (bin >> 1)` leaves that bit untouched and synthesis just dropped the redundant
-register.
+One detail I hadn't predicted: the report sources the top pointer bit from `wbin_reg[4]`
+rather than `wgray_reg[4]`. The MSB of a Gray code is the same as the MSB of the binary
+it came from, so `bin ^ (bin >> 1)` leaves that bit alone and synthesis dropped the
+duplicate register.
 
 ---
 

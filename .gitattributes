@@ -1,0 +1,10 @@
+# Written on Windows, so line endings need pinning or a Linux checkout gets
+# carriage returns in places that care about them.
+
+* text=auto
+
+# bash refuses a script whose shebang line ends in \r
+*.sh text eol=lf
+
+# tool transcripts are evidence; leave them exactly as the tool wrote them
+results/* -text

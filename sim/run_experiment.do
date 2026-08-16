@@ -2,7 +2,7 @@
 #   export PATH="/c/intelFPGA_lite/20.1/modelsim_ase/win32aloem:$PATH"
 #   cd sim && vsim -c -do run_experiment.do
 
-if {[file exists work_exp]} { vdel -all -lib work_exp }
+if {[file exists work_exp]} { vdel -lib work_exp -all }
 vlib work_exp
 
 # -timescale because the experiment injects real per-bit delays; without a

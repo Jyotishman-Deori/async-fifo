@@ -10,13 +10,10 @@ module async_fifo_sva #(
 ) (
     input logic             wclk, wrst_n, winc, wfull,
     input logic             rclk, rrst_n, rinc, rempty,
-    input logic [ASIZE:0]   wbin, rbin, wgray, rgray,
-    input logic [ASIZE:0]   wq2_rptr, rq2_wptr
+    input logic [ASIZE:0]   wbin, rbin, wgray, rgray
 );
 
     localparam int DEPTH = 1 << ASIZE;
-
-    default clocking @(posedge wclk); endclocking
 
     // -----------------------------------------------------------------
     // the Gray property itself
@@ -186,7 +183,5 @@ bind async_fifo async_fifo_sva #(.ASIZE(ASIZE)) u_sva (
     .wbin     (wbin),
     .rbin     (rbin),
     .wgray    (wgray),
-    .rgray    (rgray),
-    .wq2_rptr (wq2_rptr),
-    .rq2_wptr (rq2_wptr)
+    .rgray    (rgray)
 );

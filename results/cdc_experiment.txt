@@ -3,37 +3,36 @@ Reading pref.tcl
 2020.1
 
 do run_experiment.do
-Error 133: Unable to remove directory "C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/work_exp".
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:20 on Aug 16,2026
+Start time: 14:32:20 on Aug 16,2026
 vlog -timescale 1ns/1ps -work work_exp ../rtl/sync_2ff.v 
 -- Compiling module sync_2ff
 
 Top level modules:
 	sync_2ff
-End time: 13:17:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:20 on Aug 16,2026
+Start time: 14:32:20 on Aug 16,2026
 vlog -timescale 1ns/1ps -work work_exp ../experiments/async_fifo_exp.v 
 -- Compiling module async_fifo_exp
 
 Top level modules:
 	async_fifo_exp
-End time: 13:17:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:20 on Aug 16,2026
+Start time: 14:32:20 on Aug 16,2026
 vlog -sv -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.sv 
 -- Compiling module tb_cdc_experiment
 -- Compiling module cdc_case
 
 Top level modules:
 	tb_cdc_experiment
-End time: 13:17:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 vsim -c -voptargs=""+acc"" work_exp.tb_cdc_experiment 
-Start time: 13:17:20 on Aug 16,2026
+Start time: 14:32:20 on Aug 16,2026
 Loading sv_std.std
 Loading work_exp.tb_cdc_experiment
 Loading work_exp.cdc_case
@@ -69,5 +68,5 @@ Loading work_exp.sync_2ff
 =============================================================
 ** Note: $finish    : ../experiments/tb_cdc_experiment.sv(103)
    Time: 115389950 ps  Iteration: 1  Instance: /tb_cdc_experiment
-End time: 13:17:21 on Aug 16,2026, Elapsed time: 0:00:01
+End time: 14:32:21 on Aug 16,2026, Elapsed time: 0:00:01
 Errors: 0, Warnings: 0

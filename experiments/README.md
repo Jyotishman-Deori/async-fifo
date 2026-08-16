@@ -8,15 +8,15 @@ plain binary, and delay each bit of the crossing bus by a different amount.
 ## Why I bothered
 
 I wrote the FIFO, the testbench passed, and I could recite why Gray coding is
-needed. Then I took the Gray coding out — swapped the crossing to raw binary
-pointers, with the matching binary full/empty tests so the encoding was the only
-thing that changed — and ran the same testbench again.
+needed. Then I took the Gray coding out, swapping the crossing to raw binary
+pointers and using the matching binary full/empty tests so the encoding was the
+only thing that changed, and ran the same testbench again.
 
 It passed. Zero mismatches, both clock ratios, full and empty both reached.
 
-That is worth sitting with. The single most quoted fact about asynchronous FIFOs
-is that binary pointers across a clock boundary will corrupt your data, and my
-verification could not tell the two designs apart.
+The single most quoted fact about asynchronous FIFOs is that binary pointers
+across a clock boundary will corrupt your data, and my verification could not
+tell the two designs apart.
 
 ## Why it passed
 
@@ -28,20 +28,20 @@ would show it; plain RTL never will.
 
 So I injected the skew by hand. Each bit of the crossing bus gets its own
 transport delay before it reaches the synchroniser, and `n_caught_midflight`
-counts how many times a domain latched that bus while it was still settling —
-so a clean run can be distinguished from a run that simply never sampled at a
-bad moment.
+counts how many times a domain latched that bus while it was still settling, so
+a clean run can be told apart from a run that simply never sampled at a bad
+moment.
 
 Two things had to be fixed before the experiment measured anything:
 
 **The delay pattern must not be monotonic.** My first attempt delayed bit `i` by
 `i * step`, so low bits always moved first and the transient value was always
-*smaller* than both the old and the new pointer. That direction is harmless —
-a pointer that reads low just makes the other side believe the FIFO is fuller,
-or emptier, than it really is, which is the pessimistic direction the design
+*smaller* than both the old and the new pointer. That direction is harmless. A
+pointer that reads low just makes the other side believe the FIFO is fuller, or
+emptier, than it really is, which is the pessimistic direction the design
 already tolerates by construction. Binary passed and told me nothing. The
 pattern is now `step * ((i*3+1) % 4)`, which lets a high bit land before the
-low bits have cleared, so the pointer can transiently read *high* — the
+low bits have cleared, so the pointer can transiently read *high*, which is the
 direction that loses data.
 
 **The clocks must not be rationally related.** The main testbench uses 7 ns and
@@ -66,8 +66,8 @@ worst-case spread across the bus is 3x that.
 
 Gray is flat at zero the whole way. At the last row it was caught mid-transition
 3234 times and still did not drop or corrupt a single word, because only one bit
-ever moves — catch it early or late and you get the old value or the new one,
-and both are safe.
+ever moves. Catch it early or late and you get the old value or the new one, and
+both are safe.
 
 Binary needs more explaining, because it survives the first three rows despite
 being caught mid-transition thousands of times.
@@ -76,8 +76,8 @@ being caught mid-transition thousands of times.
 
 A transient only exists while a pointer is *moving*, and a pointer moves only
 when that side has actually done something. If the write domain latches a
-corrupted read pointer, the corruption is proof that a read just happened —
-which means a slot genuinely was freed. The garbage breaks the equality test for
+corrupted read pointer, the corruption is proof that a read just happened, which
+means a slot genuinely was freed. The garbage breaks the equality test for
 exactly one cycle, `wfull` drops for exactly one cycle, and at most one extra
 write slips through. That write had somewhere to go. Same argument on the other
 side: a corrupted write pointer means a write really did happen, so the data the
@@ -92,7 +92,8 @@ the self-limiting argument collapses. 89% of the words read came out wrong.
 So binary is not merely riskier than Gray. It is correct only while the skew
 stays under a bound nobody checks, on a path that is by definition unconstrained,
 and it fails completely rather than gracefully once that bound is crossed. Gray
-has no such bound — the guarantee is structural, not a matter of degree.
+has no such bound, because the guarantee is structural rather than a matter of
+degree.
 
 ## Running it
 

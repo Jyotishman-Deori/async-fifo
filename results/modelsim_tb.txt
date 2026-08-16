@@ -3,36 +3,35 @@ Reading pref.tcl
 2020.1
 
 do run.do
-Error 133: Unable to remove directory "C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/work".
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:18 on Aug 16,2026
+Start time: 14:31:57 on Aug 16,2026
 vlog -work work ../rtl/sync_2ff.v 
 -- Compiling module sync_2ff
 
 Top level modules:
 	sync_2ff
-End time: 13:17:18 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:31:57 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:18 on Aug 16,2026
+Start time: 14:31:57 on Aug 16,2026
 vlog -work work ../rtl/async_fifo.v 
 -- Compiling module async_fifo
 
 Top level modules:
 	async_fifo
-End time: 13:17:18 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:31:57 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 13:17:18 on Aug 16,2026
+Start time: 14:31:57 on Aug 16,2026
 vlog -sv -work work ../tb/tb_async_fifo.sv 
 -- Compiling module tb_async_fifo
 
 Top level modules:
 	tb_async_fifo
-End time: 13:17:18 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:31:57 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 vsim -c -voptargs=""+acc"" work.tb_async_fifo 
-Start time: 13:17:19 on Aug 16,2026
+Start time: 14:31:57 on Aug 16,2026
 Loading sv_std.std
 Loading work.tb_async_fifo
 Loading work.async_fifo
@@ -66,5 +65,5 @@ Loading work.sync_2ff
 =========================================================
 ** Note: $finish    : ../tb/tb_async_fifo.sv(236)
    Time: 276481500 ps  Iteration: 1  Instance: /tb_async_fifo
-End time: 13:17:19 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 14:31:57 on Aug 16,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0

@@ -8,7 +8,10 @@
 # ModelSim ASE has no SVA/covergroup support. Assertions and functional
 # coverage go through Vivado XSim, same as the MTP flow.
 
-if {[file exists work]} { vdel -all }
+# -lib work, not a bare vdel -all: the bare form goes after whatever the
+# current library happens to be and fails with "unable to remove directory"
+# if anything else is still holding it.
+if {[file exists work]} { vdel -lib work -all }
 vlib work
 
 vlog -work work ../rtl/sync_2ff.v

@@ -1,33 +1,5 @@
-# puts "\n==================== UTILIZATION ===================="
 
-==================== UTILIZATION ====================
-# report_utilization
-Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
-------------------------------------------------------------------------------------
-| Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date         : Sun Aug 16 13:16:55 2026
-| Host         : iyro11 running 64-bit major release  (build 9200)
-| Command      : report_utilization
-| Design       : async_fifo
-| Device       : 7z020clg400-1
-| Design State : Synthesized
-------------------------------------------------------------------------------------
-
-Utilization Design Information
-
-Table of Contents
------------------
-1. Slice Logic
-1.1 Summary of Registers by Type
-2. Memory
-3. DSP
-4. IO and GT Specific
-5. Clocking
-6. Specific Feature
-7. Primitives
-8. Black Boxes
-9. Instantiated Netlists
-
+==================== SIZE ====================
 1. Slice Logic
 --------------
 
@@ -80,145 +52,15 @@ Table of Contents
 * Note: Each Block RAM Tile only has one FIFO logic available and therefore can accommodate only one FIFO36E1 or one FIFO18E1. However, if a FIFO18E1 occupies a Block RAM Tile, that tile can still accommodate a RAMB18E1
 
 
-3. DSP
-------
 
-+-----------+------+-------+-----------+-------+
-| Site Type | Used | Fixed | Available | Util% |
-+-----------+------+-------+-----------+-------+
-| DSPs      |    0 |     0 |       220 |  0.00 |
-+-----------+------+-------+-----------+-------+
-
-
-4. IO and GT Specific
----------------------
-
-+-----------------------------+------+-------+-----------+-------+
-|          Site Type          | Used | Fixed | Available | Util% |
-+-----------------------------+------+-------+-----------+-------+
-| Bonded IOB                  |    0 |     0 |       125 |  0.00 |
-| Bonded IPADs                |    0 |     0 |         2 |  0.00 |
-| Bonded IOPADs               |    0 |     0 |       130 |  0.00 |
-| PHY_CONTROL                 |    0 |     0 |         4 |  0.00 |
-| PHASER_REF                  |    0 |     0 |         4 |  0.00 |
-| OUT_FIFO                    |    0 |     0 |        16 |  0.00 |
-| IN_FIFO                     |    0 |     0 |        16 |  0.00 |
-| IDELAYCTRL                  |    0 |     0 |         4 |  0.00 |
-| IBUFDS                      |    0 |     0 |       121 |  0.00 |
-| PHASER_OUT/PHASER_OUT_PHY   |    0 |     0 |        16 |  0.00 |
-| PHASER_IN/PHASER_IN_PHY     |    0 |     0 |        16 |  0.00 |
-| IDELAYE2/IDELAYE2_FINEDELAY |    0 |     0 |       200 |  0.00 |
-| ILOGIC                      |    0 |     0 |       125 |  0.00 |
-| OLOGIC                      |    0 |     0 |       125 |  0.00 |
-+-----------------------------+------+-------+-----------+-------+
-
-
-5. Clocking
------------
-
-+------------+------+-------+-----------+-------+
-|  Site Type | Used | Fixed | Available | Util% |
-+------------+------+-------+-----------+-------+
-| BUFGCTRL   |    0 |     0 |        32 |  0.00 |
-| BUFIO      |    0 |     0 |        16 |  0.00 |
-| MMCME2_ADV |    0 |     0 |         4 |  0.00 |
-| PLLE2_ADV  |    0 |     0 |         4 |  0.00 |
-| BUFMRCE    |    0 |     0 |         8 |  0.00 |
-| BUFHCE     |    0 |     0 |        72 |  0.00 |
-| BUFR       |    0 |     0 |        16 |  0.00 |
-+------------+------+-------+-----------+-------+
-
-
-6. Specific Feature
--------------------
-
-+-------------+------+-------+-----------+-------+
-|  Site Type  | Used | Fixed | Available | Util% |
-+-------------+------+-------+-----------+-------+
-| BSCANE2     |    0 |     0 |         4 |  0.00 |
-| CAPTUREE2   |    0 |     0 |         1 |  0.00 |
-| DNA_PORT    |    0 |     0 |         1 |  0.00 |
-| EFUSE_USR   |    0 |     0 |         1 |  0.00 |
-| FRAME_ECCE2 |    0 |     0 |         1 |  0.00 |
-| ICAPE2      |    0 |     0 |         2 |  0.00 |
-| STARTUPE2   |    0 |     0 |         1 |  0.00 |
-| XADC        |    0 |     0 |         1 |  0.00 |
-+-------------+------+-------+-----------+-------+
-
-
-7. Primitives
--------------
-
-+----------+------+---------------------+
-| Ref Name | Used | Functional Category |
-+----------+------+---------------------+
-| FDCE     |   39 |        Flop & Latch |
-| RAMD32   |   12 |  Distributed Memory |
-| LUT6     |   10 |                 LUT |
-| LUT5     |    6 |                 LUT |
-| RAMS32   |    4 |  Distributed Memory |
-| LUT4     |    4 |                 LUT |
-| LUT3     |    4 |                 LUT |
-| LUT1     |    2 |                 LUT |
-| LUT2     |    1 |                 LUT |
-| FDPE     |    1 |        Flop & Latch |
-+----------+------+---------------------+
-
-
-8. Black Boxes
---------------
-
-+----------+------+
-| Ref Name | Used |
-+----------+------+
-
-
-9. Instantiated Netlists
-------------------------
-
-+----------+------+
-| Ref Name | Used |
-+----------+------+
-
-
-# puts "\n==================== LATCH CHECK ===================="
-
-==================== LATCH CHECK ====================
-# set latches [get_cells -hier -filter {PRIMITIVE_TYPE =~ REGISTER.latch.*} -quiet]
-# if {[llength $latches] == 0} {
-#     puts "PASS: 0 latches inferred"
-# } else {
-#     puts "FAIL: [llength $latches] latch(es) inferred:"
-#     foreach l $latches { puts "  $l" }
-# }
+==================== LATCHES ====================
 PASS: 0 latches inferred
-# puts "\n==================== CDC ===================="
 
 ==================== CDC ====================
-# set cdc_file [file join $outdir cdc_report.txt]
-# report_cdc -details -file $cdc_file
-INFO: [Timing 38-91] UpdateTimingParams: No interconnect No Cell Dly, Speed grade: -1, Delay Type: max.
-INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
-INFO: [Timing 38-35] Done setting XDC timing constraints.
-INFO: [Timing 38-314] The report_cdc command only analyzes and reports clock domain crossing paths where clocks have been defined on both source and destination sides. Ports with no input delay constraint are skipped. Please run check_timing to verify there are no missing clock definitions in your design, nor any unconstrained input port.
-report_cdc: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 1646.098 ; gain = 410.633
-# set fh [open $cdc_file r]
-# puts [read $fh]
-Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
-------------------------------------------------------------------------------------
-| Tool Version : Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
-| Date         : Sun Aug 16 13:17:02 2026
-| Host         : iyro11 running 64-bit major release  (build 9200)
-| Command      : report_cdc -details -file synth/cdc_report.txt
-| Design       : async_fifo
-| Device       : 7z020-clg400
-| Speed File   : -1  PRODUCTION 1.12 2019-11-22
-------------------------------------------------------------------------------------
 
 CDC Report
 
 ID     Severity  Count  Description
------  --------  -----  ----------------------------------------------
 CDC-3  Info          2  1-bit synchronized with ASYNC_REG property
 CDC-6  Warning       2  Multi-bit synchronized with ASYNC_REG property
 
@@ -241,6 +83,3 @@ Row  ID     Severity  Description                                     Depth  Exc
   2  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  rbin_reg[4]/C     sync_r2w/q1_reg[4]/D
 
 
-# close $fh
-# exit
-INFO: [Common 17-206] Exiting Vivado at Sun Aug 16 13:17:02 2026...
