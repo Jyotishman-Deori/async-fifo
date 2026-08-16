@@ -4,7 +4,8 @@ A FIFO that moves data between two clock domains that have no relationship to ea
 other. RTL in Verilog-2001, verified with a SystemVerilog testbench: scoreboard,
 assertions and functional coverage.
 
-Self-project. Jyotishman Deori (25M1186), M.Tech Electronic Systems, IIT Bombay.
+Self-project. Jyotishman Deori (25M1186), M.Tech. Electrical Engineering
+(Electronic Systems), IIT Bombay.
 
 I picked this after working on the AXI-Stream interfaces in my M.Tech project, where
 the PS and PL sides sit in different clock domains and I mostly got to rely on the
