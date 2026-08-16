@@ -155,6 +155,8 @@
   /* ---------------- figures ---------------- */
   figure{ margin:0 0 4mm 0; break-inside:avoid; }
   figure svg{ width:100%; height:auto; display:block; }
+  figure img.photo{ display:block; margin:0 auto; width:74mm; height:auto;
+                    border:0.6pt solid #999; }
 
   .page-break{ break-before:page; }
   .refs{ padding-left:0; list-style:none; }
@@ -646,6 +648,17 @@ through a VIO core, and the LEDs give a local indication of the run.</div>
  PASS
 =============================================================</pre>
 <div class="fcap">Figure 3: Console output of the hardware run, captured from the Vivado Tcl session that drove the test over JTAG. The two phases run for ten seconds each and the counters are read back once both interfaces have stopped. The full transcript is in <code>results/hardware_test.txt</code>.</div>
+</figure>
+
+<figure>
+<img class="photo" src="board_running.jpg"
+     alt="PYNQ-Z2 board with the design loaded and the test running">
+<div class="fcap">Figure 4: The PYNQ-Z2 with the design loaded and the test running. The
+green indicator beside the <code>DONE</code> marking shows that the FPGA fabric has been
+configured, and the user LED near the top of the board is driven by the test logic. The
+board is attached to the host over the USB JTAG link, which is the only connection the
+flow uses; no SD card is fitted, because the processing system is started over JTAG
+solely to supply <code>FCLK_CLK0</code>.</div>
 </figure>
 
 <p>Phase 1 finishes sixteen words short of the number written, which is exactly the
