@@ -130,18 +130,15 @@ for i, page in enumerate(doc):
                      fontname="tiro", fontsize=9.5, color=INK)
 
 # ------------------------------------------------------------------ outline
-FRONT = ("Abstract", "Contents", "List of Figures")
+FRONT = ("Abstract", "Contents")
 SECTIONS = [
     ("Abstract", "Abstract"),
     ("Contents", "Contents"),
-    ("List of Figures", "List of Figures"),
     ("1  Introduction", "1. Introduction"),
-    ("2  Literature Review", "2. Literature Review"),
-    ("3  Background", "3. Background"),
-    ("4  Methodology", "4. Methodology"),
-    ("5  Results and Discussion", "5. Results and Discussion"),
-    ("6  Conclusion", "6. Conclusion"),
-    ("7  Future Work", "7. Future Work"),
+    ("2  Design", "2. Design"),
+    ("3  Verification", "3. Verification"),
+    ("4  Results", "4. Results"),
+    ("5  Conclusion", "5. Conclusion"),
     ("References", "References"),
 ]
 
