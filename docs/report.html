@@ -120,7 +120,9 @@
     break-inside:avoid; font-size:11pt;
   }
   .eq .body{ flex:1 1 auto; text-align:center; font-style:italic; }
-  .eq .body .mono{ font-style:normal; font-family:Consolas,monospace; font-size:9.6pt; }
+  /* 9pt, not 9.6: the wfull expression is 83 characters and at 9.6pt it
+     overshoots the 470pt measure by a hair and breaks mid-identifier. */
+  .eq .body .mono{ font-style:normal; font-family:Consolas,monospace; font-size:9pt; }
   .eq .n{ flex:0 0 14mm; text-align:right; font-style:normal; }
 
   /* ---------------- tables ---------------- */
