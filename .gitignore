@@ -19,6 +19,16 @@ xsim.covdb/
 synth/utilization.txt
 synth/cdc_report.txt
 
+# hardware build output. hw/build.tcl regenerates all of it, and the project
+# itself is built under TEMP because Vivado cannot write inside OneDrive.
+hw/*.bit
+hw/*.ltx
+hw/ps7_init.*
+
 # windows
 Thumbs.db
 desktop.ini
+
+# Vivado writes a stray "NA" folder when the block design has no board
+# summary path to write to
+NA/

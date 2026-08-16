@@ -10,8 +10,9 @@ I picked this after working on the AXI-Stream interfaces in my M.Tech project, w
 the PS and PL sides sit in different clock domains and I mostly got to rely on the
 handshake. I wanted to build the crossing itself rather than use one.
 
-**Status:** done. RTL, testbench, assertions and synthesis all run clean. Numbers are
-in [Results](#results), raw transcripts in [`results/`](results/).
+**Status:** done, and running on hardware. RTL, testbench, assertions and synthesis all
+clean, plus 286 million words through the real thing on a PYNQ-Z2 with zero errors.
+Numbers are in [Results](#results), raw transcripts in [`results/`](results/).
 
 ---
 
@@ -85,6 +86,7 @@ rtl/           the design, and the only thing that gets synthesised
 tb/            testbench, plus the bound SVA and covergroup checker
 sim/           ModelSim and XSim run scripts
 synth/         Vivado latch and CDC check
+hw/            the PYNQ-Z2 build: same FIFO, real clocks, real silicon
 experiments/   deliberately broken variants, kept for what they showed
 results/       raw transcripts of every run quoted below
 ```
@@ -238,6 +240,29 @@ One detail I hadn't predicted: the report sources the top pointer bit from `wbin
 rather than `wgray_reg[4]`. The MSB of a Gray code is the same as the MSB of the binary
 it came from, so `bin ^ (bin >> 1)` leaves that bit alone and synthesis dropped the
 duplicate register.
+
+### On hardware
+
+The same FIFO on a PYNQ-Z2, with `wclk` on the PS PLL and `rclk` on the board's 125 MHz
+oscillator. Two separate crystals, so the phase between them drifts instead of repeating
+and the sampling point sweeps through everything over a run:
+
+| | |
+|---|---|
+| Words written and checked | **286 176 459** |
+| Data errors | **0** |
+| Reached full / empty | yes / yes |
+| Timing | WNS 1.997 ns, WHS 0.061 ns |
+
+Roughly 28,000 times more words than the simulation, on real routing, in twenty seconds.
+
+Phase 1 finishes 16 words short of what it wrote, and that number is the FIFO depth. It
+stops with the writer running flat out against a slow reader, so the FIFO is full at the
+instant writes stop and is still holding a full 16 words. Phase 2 inverts the rates, the
+reader drains them, and the totals come out exactly equal.
+
+Full writeup, including the CDC-10 I put in my own reset logic and had to fix, is in
+[`hw/`](hw/README.md).
 
 ---
 

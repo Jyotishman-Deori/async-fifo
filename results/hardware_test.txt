@@ -1,0 +1,30 @@
+probes found:
+   empty_seen
+   errors
+   full_seen_r
+   words_read
+   words_written
+   vio_r_rate
+   vio_rst
+   vio_run
+   vio_w_rate
+-- phase 1  write fast, read slow: w_rate 15/16, r_rate 2/16, 10 s
+   words written 159905237    read 159905221    errors 0
+   full seen 1   empty seen 1
+-- phase 2  write slow, read fast: w_rate 2/16, r_rate 15/16, 10 s
+   words written 286176459    read 286176459    errors 0
+   full seen 1   empty seen 1
+=============================================================
+ HARDWARE RESULT   PYNQ-Z2, xc7z020clg400-1
+=============================================================
+  wclk   FCLK_CLK0, 100 MHz off the PS PLL
+  rclk   sys_clk,   125 MHz board oscillator
+  independent crystals, so the phase between them drifts
+  words written        286176459
+  words read+checked   286176459
+  data errors          0
+  reached full         yes
+  reached empty        yes
+-------------------------------------------------------------
+ PASS
+=============================================================
