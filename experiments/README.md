@@ -1,7 +1,7 @@
 # Does the Gray coding actually do anything?
 
 Everything here is deliberately broken code kept for the result it produced.
-None of it is part of the design. `experiments/async_fifo_exp.sv` is a modified
+None of it is part of the design. `experiments/async_fifo_exp.v` is a modified
 copy of the real FIFO with two knobs: send the pointers across as Gray or as
 plain binary, and delay each bit of the crossing bus by a different amount.
 

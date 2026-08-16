@@ -1,8 +1,8 @@
 # Dual-Clock Asynchronous FIFO
 
 A FIFO that moves data between two clock domains that have no relationship to each
-other. Written in SystemVerilog, verified with a scoreboard, assertions and functional
-coverage.
+other. RTL in Verilog-2001, verified with a SystemVerilog testbench — scoreboard,
+assertions and functional coverage.
 
 Self-project. Jyotishman Deori (25M1186), M.Tech Electronic Systems, IIT Bombay.
 
@@ -57,23 +57,28 @@ coding to see what would break, and the entire testbench still passed — see
 Each pointer crosses once, in one direction. The binary counters never cross — only
 their Gray versions do.
 
-```systemverilog
+```verilog
 module async_fifo #(
-    parameter int DSIZE = 8,
-    parameter int ASIZE = 4     // depth = 2**ASIZE
+    parameter DSIZE = 8,
+    parameter ASIZE = 4               // depth = 2**ASIZE
 ) (
-    input  logic              wclk, wrst_n, winc,
-    input  logic [DSIZE-1:0]  wdata,
-    output logic              wfull,
+    input  wire             wclk, wrst_n, winc,
+    input  wire [DSIZE-1:0] wdata,
+    output reg              wfull,
 
-    input  logic              rclk, rrst_n, rinc,
-    output logic [DSIZE-1:0]  rdata,
-    output logic              rempty
+    input  wire             rclk, rrst_n, rinc,
+    output wire [DSIZE-1:0] rdata,
+    output reg              rempty
 );
 ```
 
-Two files: `rtl/sync_2ff.sv` for the synchroniser, `rtl/async_fifo.sv` for everything
+Two files: `rtl/sync_2ff.v` for the synchroniser, `rtl/async_fifo.v` for everything
 else. The synchroniser is its own module mostly so it's obvious I didn't forget it.
+
+The design is Verilog-2001 and compiles without `-sv`. The testbench and the bound
+checker are SystemVerilog, because a scoreboard and covergroups in plain Verilog would
+be an exercise in stubbornness. Keeping the split at the RTL boundary also means the
+synthesisable half stays portable to tools that only take Verilog.
 
 ```
 rtl/           the design, and the only thing that gets synthesised
@@ -96,14 +101,14 @@ in both cases the pointers are otherwise equal.
 
 **Empty** is when the read pointer has caught up — every bit equal:
 
-```systemverilog
+```verilog
 rempty = (rgraynext == rq2_wptr);
 ```
 
 **Full** is when the write pointer has wrapped all the way around and caught the read
 pointer. Same low bits, but the top *two* bits inverted:
 
-```systemverilog
+```verilog
 wfull = (wgraynext == {~wq2_rptr[ASIZE], ~wq2_rptr[ASIZE-1], wq2_rptr[ASIZE-2:0]});
 ```
 

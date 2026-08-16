@@ -1,6 +1,6 @@
 // EXPERIMENT ONLY -- NOT PART OF THE DESIGN.
 //
-// A deliberately modified copy of rtl/async_fifo.sv with two knobs:
+// A deliberately modified copy of rtl/async_fifo.v with two knobs:
 //
 //   GRAY_CDC = 1  pointers cross Gray coded (what the real design does)
 //   GRAY_CDC = 0  pointers cross as plain binary, with the matching binary
@@ -21,35 +21,36 @@
 // Do not synthesise this. See experiments/README.md for the numbers.
 
 module async_fifo_exp #(
-    parameter int  DSIZE    = 8,
-    parameter int  ASIZE    = 4,
-    parameter bit  GRAY_CDC = 1,
-    parameter real SKEW_NS  = 0.0    // per-bit step; bit i is delayed i*SKEW_NS
+    parameter      DSIZE    = 8,
+    parameter      ASIZE    = 4,
+    parameter      GRAY_CDC = 1,
+    parameter real SKEW_NS  = 0.0    // per-bit step, see the pattern below
 ) (
-    input  logic             wclk,
-    input  logic             wrst_n,
-    input  logic             winc,
-    input  logic [DSIZE-1:0] wdata,
-    output logic             wfull,
+    input  wire             wclk,
+    input  wire             wrst_n,
+    input  wire             winc,
+    input  wire [DSIZE-1:0] wdata,
+    output reg              wfull,
 
-    input  logic             rclk,
-    input  logic             rrst_n,
-    input  logic             rinc,
-    output logic [DSIZE-1:0] rdata,
-    output logic             rempty
+    input  wire             rclk,
+    input  wire             rrst_n,
+    input  wire             rinc,
+    output wire [DSIZE-1:0] rdata,
+    output reg              rempty
 );
 
-    localparam int DEPTH = 1 << ASIZE;
+    localparam DEPTH = 1 << ASIZE;
 
-    logic [ASIZE:0] wbin, wbin_next, wgray, wgray_next;
-    logic [ASIZE:0] rbin, rbin_next, rgray, rgray_next;
-    logic [ASIZE:0] wq2_rptr, rq2_wptr;
-    logic           wfull_next, rempty_next;
+    reg  [ASIZE:0] wbin, wgray;
+    reg  [ASIZE:0] rbin, rgray;
+    wire [ASIZE:0] wbin_next, wgray_next;
+    wire [ASIZE:0] rbin_next, rgray_next;
+    wire [ASIZE:0] wq2_rptr, rq2_wptr;
+    wire           wfull_next, rempty_next;
 
     // what actually leaves each domain
-    logic [ASIZE:0] wptr_out, rptr_out;
-    assign wptr_out = GRAY_CDC ? wgray : wbin;
-    assign rptr_out = GRAY_CDC ? rgray : rbin;
+    wire [ASIZE:0] wptr_out = GRAY_CDC ? wgray : wbin;
+    wire [ASIZE:0] rptr_out = GRAY_CDC ? rgray : rbin;
 
     // ---------------------------------------------------------------------
     // skew injection
@@ -70,22 +71,26 @@ module async_fifo_exp #(
     // the pointer transiently read *high*. That is the direction that loses
     // data, because the far side thinks writes exist that do not.
     // ---------------------------------------------------------------------
-    logic [ASIZE:0] wptr_skewed, rptr_skewed;
+    reg  [ASIZE:0] wptr_skewed_r, rptr_skewed_r;
+    wire [ASIZE:0] wptr_skewed, rptr_skewed;
 
+    genvar i;
     generate
         if (SKEW_NS == 0.0) begin : g_no_skew
             assign wptr_skewed = wptr_out;
             assign rptr_skewed = rptr_out;
         end else begin : g_skew
-            for (genvar i = 0; i <= ASIZE; i++) begin : g_bit
+            for (i = 0; i <= ASIZE; i = i + 1) begin : g_bit
                 localparam real DLY = SKEW_NS * ((i * 3 + 1) % 4);
                 initial begin
-                    wptr_skewed[i] = 1'b0;
-                    rptr_skewed[i] = 1'b0;
+                    wptr_skewed_r[i] = 1'b0;
+                    rptr_skewed_r[i] = 1'b0;
                 end
-                always @(wptr_out[i]) wptr_skewed[i] <= #(DLY) wptr_out[i];
-                always @(rptr_out[i]) rptr_skewed[i] <= #(DLY) rptr_out[i];
+                always @(wptr_out[i]) wptr_skewed_r[i] <= #(DLY) wptr_out[i];
+                always @(rptr_out[i]) rptr_skewed_r[i] <= #(DLY) rptr_out[i];
             end
+            assign wptr_skewed = wptr_skewed_r;
+            assign rptr_skewed = rptr_skewed_r;
         end
     endgenerate
 
@@ -101,7 +106,8 @@ module async_fifo_exp #(
     // mid-transition. Without this number a clean run is ambiguous: it could
     // mean the encoding saved us, or it could mean we never once sampled at a
     // bad moment and the test proved nothing.
-    int n_caught_midflight = 0;
+    integer n_caught_midflight;
+    initial n_caught_midflight = 0;
 
     always @(posedge rclk) if (rrst_n && (wptr_skewed !== wptr_out))
         n_caught_midflight <= n_caught_midflight + 1;
@@ -112,9 +118,9 @@ module async_fifo_exp #(
     // ---------------------------------------------------------------------
     // storage
     // ---------------------------------------------------------------------
-    logic [DSIZE-1:0] mem [0:DEPTH-1];
+    reg [DSIZE-1:0] mem [0:DEPTH-1];
 
-    always_ff @(posedge wclk) begin
+    always @(posedge wclk) begin
         if (winc && !wfull) mem[wbin[ASIZE-1:0]] <= wdata;
     end
 
@@ -126,10 +132,10 @@ module async_fifo_exp #(
     assign wbin_next  = wbin + {{ASIZE{1'b0}}, (winc && !wfull)};
     assign wgray_next = wbin_next ^ (wbin_next >> 1);
 
-    always_ff @(posedge wclk or negedge wrst_n) begin
+    always @(posedge wclk or negedge wrst_n) begin
         if (!wrst_n) begin
-            wbin  <= '0;
-            wgray <= '0;
+            wbin  <= {(ASIZE+1){1'b0}};
+            wgray <= {(ASIZE+1){1'b0}};
         end else begin
             wbin  <= wbin_next;
             wgray <= wgray_next;
@@ -142,7 +148,7 @@ module async_fifo_exp #(
         ? (wgray_next == {~wq2_rptr[ASIZE], ~wq2_rptr[ASIZE-1], wq2_rptr[ASIZE-2:0]})
         : (wbin_next  == {~wq2_rptr[ASIZE],  wq2_rptr[ASIZE-1:0]});
 
-    always_ff @(posedge wclk or negedge wrst_n) begin
+    always @(posedge wclk or negedge wrst_n) begin
         if (!wrst_n) wfull <= 1'b0;
         else         wfull <= wfull_next;
     end
@@ -153,10 +159,10 @@ module async_fifo_exp #(
     assign rbin_next  = rbin + {{ASIZE{1'b0}}, (rinc && !rempty)};
     assign rgray_next = rbin_next ^ (rbin_next >> 1);
 
-    always_ff @(posedge rclk or negedge rrst_n) begin
+    always @(posedge rclk or negedge rrst_n) begin
         if (!rrst_n) begin
-            rbin  <= '0;
-            rgray <= '0;
+            rbin  <= {(ASIZE+1){1'b0}};
+            rgray <= {(ASIZE+1){1'b0}};
         end else begin
             rbin  <= rbin_next;
             rgray <= rgray_next;
@@ -166,7 +172,7 @@ module async_fifo_exp #(
     assign rempty_next = GRAY_CDC ? (rgray_next == rq2_wptr)
                                   : (rbin_next  == rq2_wptr);
 
-    always_ff @(posedge rclk or negedge rrst_n) begin
+    always @(posedge rclk or negedge rrst_n) begin
         if (!rrst_n) rempty <= 1'b1;
         else         rempty <= rempty_next;
     end

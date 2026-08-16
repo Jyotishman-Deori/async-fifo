@@ -7,8 +7,8 @@ vlib work_exp
 
 # -timescale because the experiment injects real per-bit delays; without a
 # consistent unit across all three files vsim refuses to elaborate.
-vlog -sv -timescale 1ns/1ps -work work_exp ../rtl/sync_2ff.sv
-vlog -sv -timescale 1ns/1ps -work work_exp ../experiments/async_fifo_exp.sv
+vlog -timescale 1ns/1ps -work work_exp ../rtl/sync_2ff.v
+vlog -timescale 1ns/1ps -work work_exp ../experiments/async_fifo_exp.v
 vlog -sv -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.sv
 
 vsim -c -voptargs="+acc" work_exp.tb_cdc_experiment

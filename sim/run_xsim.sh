@@ -14,11 +14,10 @@ cd "$(dirname "$0")"
 
 rm -rf xsim.dir .Xil xvlog.log xelab.log xsim.log *.pb *.jou
 
-xvlog -sv \
-    ../rtl/sync_2ff.sv \
-    ../rtl/async_fifo.sv \
-    ../tb/tb_async_fifo.sv \
-    ../tb/async_fifo_sva.sv
+# RTL is Verilog-2001; testbench and bound checker are SystemVerilog
+xvlog ../rtl/sync_2ff.v ../rtl/async_fifo.v
+
+xvlog -sv ../tb/tb_async_fifo.sv ../tb/async_fifo_sva.sv
 
 # -relax so the bind statement does not trip elaboration ordering
 xelab -debug typical -relax tb_async_fifo -s tb_snap

@@ -6,39 +6,44 @@
 // Structure follows Cliff Cummings, "Simulation and Synthesis Techniques for
 // Asynchronous FIFO Design" (SNUG 2002). The pointer comparison tricks below
 // are his; the notes are mine, written while working out why they hold.
+//
+// Verilog-2001. The testbench and the bound assertion checker are
+// SystemVerilog -- design in Verilog, verification in SystemVerilog.
 
 module async_fifo #(
-    parameter int DSIZE = 8,
-    parameter int ASIZE = 4          // depth = 2**ASIZE
+    parameter DSIZE = 8,
+    parameter ASIZE = 4               // depth = 2**ASIZE
 ) (
     // write domain
-    input  logic             wclk,
-    input  logic             wrst_n,
-    input  logic             winc,
-    input  logic [DSIZE-1:0] wdata,
-    output logic             wfull,
+    input  wire             wclk,
+    input  wire             wrst_n,
+    input  wire             winc,
+    input  wire [DSIZE-1:0] wdata,
+    output reg              wfull,
 
     // read domain
-    input  logic             rclk,
-    input  logic             rrst_n,
-    input  logic             rinc,
-    output logic [DSIZE-1:0] rdata,
-    output logic             rempty
+    input  wire             rclk,
+    input  wire             rrst_n,
+    input  wire             rinc,
+    output wire [DSIZE-1:0] rdata,
+    output reg              rempty
 );
 
-    localparam int DEPTH = 1 << ASIZE;
+    localparam DEPTH = 1 << ASIZE;
 
     // Pointers are ASIZE+1 bits. The low ASIZE bits address the memory; the
     // extra top bit is a wrap flag and it is the only thing that tells full
     // apart from empty, since the addresses match in both cases.
-    logic [ASIZE:0] wbin,  wbin_next,  wgray,  wgray_next;
-    logic [ASIZE:0] rbin,  rbin_next,  rgray,  rgray_next;
+    reg  [ASIZE:0] wbin, wgray;
+    reg  [ASIZE:0] rbin, rgray;
+    wire [ASIZE:0] wbin_next, wgray_next;
+    wire [ASIZE:0] rbin_next, rgray_next;
 
     // each side's view of the other pointer, two clocks stale
-    logic [ASIZE:0] wq2_rptr;   // read pointer, seen from the write domain
-    logic [ASIZE:0] rq2_wptr;   // write pointer, seen from the read domain
+    wire [ASIZE:0] wq2_rptr;   // read pointer, seen from the write domain
+    wire [ASIZE:0] rq2_wptr;   // write pointer, seen from the read domain
 
-    logic wfull_next, rempty_next;
+    wire wfull_next, rempty_next;
 
     // ---------------------------------------------------------------------
     // storage
@@ -47,9 +52,9 @@ module async_fifo #(
     // distributed RAM rather than a pile of flops. Reading is combinational,
     // so rdata is valid in the same cycle rempty is low.
     // ---------------------------------------------------------------------
-    logic [DSIZE-1:0] mem [0:DEPTH-1];
+    reg [DSIZE-1:0] mem [0:DEPTH-1];
 
-    always_ff @(posedge wclk) begin
+    always @(posedge wclk) begin
         if (winc && !wfull) mem[wbin[ASIZE-1:0]] <= wdata;
     end
 
@@ -80,10 +85,10 @@ module async_fifo #(
     assign wbin_next  = wbin + {{ASIZE{1'b0}}, (winc && !wfull)};
     assign wgray_next = wbin_next ^ (wbin_next >> 1);
 
-    always_ff @(posedge wclk or negedge wrst_n) begin
+    always @(posedge wclk or negedge wrst_n) begin
         if (!wrst_n) begin
-            wbin  <= '0;
-            wgray <= '0;
+            wbin  <= {(ASIZE+1){1'b0}};
+            wgray <= {(ASIZE+1){1'b0}};
         end else begin
             wbin  <= wbin_next;
             wgray <= wgray_next;
@@ -98,7 +103,7 @@ module async_fifo #(
     assign wfull_next = (wgray_next ==
                          {~wq2_rptr[ASIZE], ~wq2_rptr[ASIZE-1], wq2_rptr[ASIZE-2:0]});
 
-    always_ff @(posedge wclk or negedge wrst_n) begin
+    always @(posedge wclk or negedge wrst_n) begin
         if (!wrst_n) wfull <= 1'b0;
         else         wfull <= wfull_next;
     end
@@ -109,10 +114,10 @@ module async_fifo #(
     assign rbin_next  = rbin + {{ASIZE{1'b0}}, (rinc && !rempty)};
     assign rgray_next = rbin_next ^ (rbin_next >> 1);
 
-    always_ff @(posedge rclk or negedge rrst_n) begin
+    always @(posedge rclk or negedge rrst_n) begin
         if (!rrst_n) begin
-            rbin  <= '0;
-            rgray <= '0;
+            rbin  <= {(ASIZE+1){1'b0}};
+            rgray <= {(ASIZE+1){1'b0}};
         end else begin
             rbin  <= rbin_next;
             rgray <= rgray_next;
@@ -123,7 +128,7 @@ module async_fifo #(
     // with no wrap between them, so every bit matches.
     assign rempty_next = (rgray_next == rq2_wptr);
 
-    always_ff @(posedge rclk or negedge rrst_n) begin
+    always @(posedge rclk or negedge rrst_n) begin
         if (!rrst_n) rempty <= 1'b1;   // empty out of reset
         else         rempty <= rempty_next;
     end

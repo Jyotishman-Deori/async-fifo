@@ -7,8 +7,8 @@
 
 set outdir [file dirname [info script]]
 
-read_verilog -sv [file join $outdir .. rtl sync_2ff.sv]
-read_verilog -sv [file join $outdir .. rtl async_fifo.sv]
+read_verilog [file join $outdir .. rtl sync_2ff.v]
+read_verilog [file join $outdir .. rtl async_fifo.v]
 
 synth_design -top async_fifo -part xc7z020clg400-1 -mode out_of_context
 
