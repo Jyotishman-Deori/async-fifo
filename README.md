@@ -14,6 +14,9 @@ handshake. I wanted to build the crossing itself rather than use one.
 clean, plus 286 million words through the real thing on a PYNQ-Z2 with zero errors.
 Numbers are in [Results](#results), raw transcripts in [`results/`](results/).
 
+There is a written-up version of all of this as a report:
+[`docs/Async_FIFO_Report.pdf`](docs/Async_FIFO_Report.pdf).
+
 ---
 
 ## The problem
@@ -89,6 +92,7 @@ synth/         Vivado latch and CDC check
 hw/            the PYNQ-Z2 build: same FIFO, real clocks, real silicon
 experiments/   deliberately broken variants, kept for what they showed
 results/       raw transcripts of every run quoted below
+docs/          the report, and the source it is built from
 ```
 
 ---
@@ -187,6 +191,14 @@ vivado -mode batch -source synth/synth_check.tcl
 
 # the CDC encoding experiment (not the design)
 cd sim && vsim -c -do run_experiment.do
+
+# hardware: build the bitstream, start the PS clocks and load it, then run
+vivado -mode batch -source hw/build.tcl
+xsdb hw/program.tcl
+vivado -mode batch -source hw/run_hw_test.tcl
+
+# rebuild the report from docs/report.html
+python docs/make_pdf.py
 ```
 
 ModelSim ASE can't do SVA or covergroups, so assertions and functional coverage run in
@@ -201,7 +213,7 @@ nothing verification-only ends up in the synthesisable RTL.
 Every number below came out of a transcript in [`results/`](results/). Nothing here is
 estimated or rounded up.
 
-The functional testbench on ModelSim ASE 20.1 put 10 017 words through, both clock
+The functional testbench on ModelSim ASE 20.1 put 10,017 words through, both clock
 ratios, and compared every one of them on the way out:
 
 | | |
@@ -209,11 +221,11 @@ ratios, and compared every one of them on the way out:
 | Data mismatches | 0 |
 | Overflows / underflows | 0 / 0 |
 | Words left unchecked | 0 |
-| Cycles spent full / empty | 12 678 / 12 419 |
-| Back-to-back writes | 3 025 |
-| Concurrent read and write | 3 546 |
+| Cycles spent full / empty | 12,678 / 12,419 |
+| Back-to-back writes | 3,025 |
+| Concurrent read and write | 3,546 |
 
-The same testbench under XSim with the assertions and covergroups bound on ran 10 015
+The same testbench under XSim with the assertions and covergroups bound on ran 10,015
 words, no assertion failures across the nine properties, and 100% on all four
 covergroups. The word counts differ by two between the simulators because the stimulus
 is randomised and the two implementations of `$urandom` don't produce the same stream
@@ -249,7 +261,7 @@ and the sampling point sweeps through everything over a run:
 
 | | |
 |---|---|
-| Words written and checked | **286 176 459** |
+| Words written and checked | **286,176,459** |
 | Data errors | **0** |
 | Reached full / empty | yes / yes |
 | Timing | WNS 1.997 ns, WHS 0.061 ns |
