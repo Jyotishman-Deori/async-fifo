@@ -521,6 +521,94 @@ board's separate 125 MHz oscillator. The two sources are independent, so the pha
 between them drifts continuously rather than repeating, which is the condition the
 design is intended to tolerate.</p>
 
+<figure>
+<svg viewBox="0 0 720 336" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Block diagram of the hardware test setup on the PYNQ-Z2">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#000"/>
+    </marker>
+    <style>
+      .k{fill:#dcdcdc;stroke:#000;stroke-width:1.2}
+      .f{fill:#eeeeee;stroke:#000;stroke-width:1.3}
+      .w{fill:#fff;stroke:#000;stroke-width:1.1}
+      .a{stroke:#000;stroke-width:1.1;fill:none;marker-end:url(#ar2)}
+      .h1{font-family:Cambria,Georgia,serif;font-size:12px;fill:#000}
+      .h2{font-family:Cambria,Georgia,serif;font-size:10px;fill:#444}
+      .dm{font-family:Cambria,Georgia,serif;font-size:11px;fill:#000;font-style:italic}
+    </style>
+  </defs>
+
+  <!-- clock sources -->
+  <rect class="k" x="60"  y="18" width="176" height="44" rx="2"/>
+  <text class="h1" x="148" y="38" text-anchor="middle">Zynq processing system</text>
+  <text class="h2" x="148" y="53" text-anchor="middle">FCLK_CLK0, 100 MHz, PS PLL</text>
+
+  <rect class="k" x="486" y="18" width="176" height="44" rx="2"/>
+  <text class="h1" x="574" y="38" text-anchor="middle">board oscillator</text>
+  <text class="h2" x="574" y="53" text-anchor="middle">125 MHz, pin H16</text>
+
+  <path class="a" d="M 148 62 L 148 104"/>
+  <text class="h2" x="153" y="80">wclk</text>
+  <path class="a" d="M 574 62 L 574 104"/>
+  <text class="h2" x="579" y="80">rclk</text>
+
+  <!-- domain divider -->
+  <line x1="360" y1="72" x2="360" y2="248" stroke="#777"
+        stroke-width="1" stroke-dasharray="6 4"/>
+  <text class="dm" x="46"  y="96">write domain</text>
+  <text class="dm" x="674" y="96" text-anchor="end">read domain</text>
+
+  <!-- stimulus and checker -->
+  <rect class="w" x="46" y="106" width="204" height="48" rx="2"/>
+  <text class="h1" x="148" y="126" text-anchor="middle">data and stall LFSRs</text>
+  <text class="h2" x="148" y="141" text-anchor="middle">pseudo-random write stream</text>
+
+  <rect class="f" x="286" y="102" width="148" height="56" rx="2"/>
+  <text class="h1" x="360" y="124" text-anchor="middle">async_fifo</text>
+  <text class="h2" x="360" y="140" text-anchor="middle">DSIZE 8, ASIZE 4</text>
+
+  <rect class="w" x="470" y="106" width="204" height="48" rx="2"/>
+  <text class="h1" x="572" y="126" text-anchor="middle">reference LFSR</text>
+  <text class="h2" x="572" y="141" text-anchor="middle">and comparator</text>
+
+  <path class="a" d="M 250 130 L 282 130"/>
+  <text class="h2" x="252" y="122">wdata</text>
+  <path class="a" d="M 434 130 L 466 130"/>
+  <text class="h2" x="436" y="122">rdata</text>
+
+  <!-- counters -->
+  <rect class="w" x="238" y="196" width="244" height="44" rx="2"/>
+  <text class="h1" x="360" y="216" text-anchor="middle">counters</text>
+  <text class="h2" x="360" y="231" text-anchor="middle">words written, words read, errors, full and empty seen</text>
+
+  <path class="a" d="M 148 154 L 148 218 L 234 218"/>
+  <path class="a" d="M 572 154 L 572 218 L 486 218"/>
+
+  <!-- readout -->
+  <rect class="k" x="238" y="272" width="244" height="42" rx="2"/>
+  <text class="h1" x="360" y="292" text-anchor="middle">VIO core</text>
+  <text class="h2" x="360" y="306" text-anchor="middle">counters read back over JTAG</text>
+
+  <path class="a" d="M 360 240 L 360 268"/>
+  <path class="a" d="M 482 293 L 566 293"/>
+  <text class="h2" x="572" y="290">to host</text>
+  <text class="h2" x="572" y="303">over JTAG</text>
+
+  <rect class="w" x="60" y="272" width="140" height="42" rx="2"/>
+  <text class="h1" x="130" y="292" text-anchor="middle">4 LEDs</text>
+  <text class="h2" x="130" y="306" text-anchor="middle">run, error, corners hit</text>
+  <path class="a" d="M 234 293 L 204 293"/>
+</svg>
+<div class="fcap">Figure 2: Hardware test setup implemented in the PYNQ-Z2 fabric. The
+write domain is clocked from the processing system PLL and the read domain from the
+board oscillator, so the two are independent. A pseudo-random stream is written into the
+FIFO and an identical reference sequence on the read side is compared against what
+emerges; any mismatch increments the error counter. Counters are read back over JTAG
+through a VIO core, and the LEDs give a local indication of the run.</div>
+</figure>
+
 <div class="tw">
 <div class="tcap">Table 5: Hardware measurement on PYNQ-Z2, two phases of ten seconds</div>
 <table class="full">
@@ -535,6 +623,30 @@ design is intended to tolerate.</p>
   </tbody>
 </table>
 </div>
+
+<figure>
+<pre>-- phase 1  write fast, read slow: w_rate 15/16, r_rate 2/16, 10 s
+   words written 159905237    read 159905221    errors 0
+   full seen 1   empty seen 1
+-- phase 2  write slow, read fast: w_rate 2/16, r_rate 15/16, 10 s
+   words written 286176459    read 286176459    errors 0
+   full seen 1   empty seen 1
+=============================================================
+ HARDWARE RESULT   PYNQ-Z2, xc7z020clg400-1
+=============================================================
+  wclk   FCLK_CLK0, 100 MHz off the PS PLL
+  rclk   sys_clk,   125 MHz board oscillator
+  independent crystals, so the phase between them drifts
+  words written        286176459
+  words read+checked   286176459
+  data errors          0
+  reached full         yes
+  reached empty        yes
+-------------------------------------------------------------
+ PASS
+=============================================================</pre>
+<div class="fcap">Figure 3: Console output of the hardware run, captured from the Vivado Tcl session that drove the test over JTAG. The two phases run for ten seconds each and the counters are read back once both interfaces have stopped. The full transcript is in <code>results/hardware_test.txt</code>.</div>
+</figure>
 
 <p>Phase 1 finishes sixteen words short of the number written, which is exactly the
 depth of the FIFO. That phase ends with the writer running at full rate against a
