@@ -32,3 +32,6 @@ desktop.ini
 # Vivado writes a stray "NA" folder when the block design has no board
 # summary path to write to
 NA/
+
+# intermediate render, make_pdf.py deletes it
+docs/_report_raw.pdf

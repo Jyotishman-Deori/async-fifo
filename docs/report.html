@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dual-Clock Asynchronous FIFO — Design, Verification and Hardware Validation</title>
+<style>
+  /* ---------- page ---------- */
+  @page { size: A4; margin: 17mm 16mm 16mm 16mm; }
+
+  :root{
+    --ink:      #16191d;
+    --body:     #24292f;
+    --muted:    #5b646f;
+    --faint:    #8a929c;
+    --accent:   #0f3d5c;   /* deep navy-teal */
+    --accent-2: #145c46;   /* deep green, for pass */
+    --warn:     #8c3a12;   /* burnt orange, for failures */
+    --rule:     #d5dbe2;
+    --rule-2:   #e8edf2;
+    --code-bg:  #f5f7f9;
+    --tint:     #eef3f7;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ font-size: 10.5pt; }
+
+  body{
+    margin:0;
+    font-family: Cambria, Georgia, "Times New Roman", serif;
+    color: var(--body);
+    line-height: 1.52;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* nothing may ever escape the text column */
+  p, li, td, th, dd, dt{ overflow-wrap:break-word; word-break:normal; hyphens:none; }
+
+  /* ---------- cover ---------- */
+  .cover{
+    height: 252mm;                 /* fills page 1 without forcing a spill */
+    display:flex; flex-direction:column;
+    break-after: page;
+  }
+  .cover-rule{ height:4pt; background:var(--accent); width:52mm; margin-bottom:14mm; }
+  .cover h1{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size: 27pt; line-height:1.16; font-weight:700;
+    color:var(--ink); margin:0 0 5mm 0; letter-spacing:-0.4pt;
+    max-width: 150mm;
+  }
+  .cover .sub{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size: 13pt; font-weight:400; color:var(--accent);
+    margin:0 0 16mm 0; line-height:1.35; max-width:140mm;
+  }
+  .who{ font-size:11pt; line-height:1.65; color:var(--body); }
+  .who .name{ font-weight:700; color:var(--ink); font-size:12pt; }
+  .who .meta{ color:var(--muted); }
+
+  .cover-spacer{ flex:1 1 auto; min-height:8mm; }
+
+  .headline{
+    border:0.9pt solid var(--rule);
+    border-left:3pt solid var(--accent);
+    background:var(--tint);
+    padding:6mm 7mm;
+    break-inside:avoid;
+  }
+  .headline h2{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size:8.5pt; letter-spacing:1.3pt; text-transform:uppercase;
+    color:var(--accent); margin:0 0 4mm 0; font-weight:700; border:0; padding:0;
+  }
+  .kpis{ display:flex; gap:6mm; }
+  .kpi{ flex:1 1 0; min-width:0; }
+  .kpi .n{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size:16pt; font-weight:700; color:var(--ink); line-height:1.1;
+    display:block; letter-spacing:-0.3pt;
+  }
+  .kpi .l{ font-size:8.5pt; color:var(--muted); line-height:1.35; display:block; margin-top:1.5mm; }
+
+  .cover-foot{
+    margin-top:10mm; padding-top:4mm; border-top:0.7pt solid var(--rule);
+    font-size:9pt; color:var(--faint);
+    display:flex; justify-content:space-between; gap:8mm;
+  }
+
+  /* ---------- headings ---------- */
+  h2, h3, h4{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    color:var(--ink); break-after:avoid; margin:0;
+  }
+  h2{
+    font-size:15pt; font-weight:700; letter-spacing:-0.2pt;
+    margin:9mm 0 3.5mm 0; padding-bottom:2mm;
+    border-bottom:0.9pt solid var(--rule);
+  }
+  h2:first-of-type{ margin-top:0; }
+  h2 .num{ color:var(--accent); font-weight:700; margin-right:2.5mm; }
+  h3{ font-size:11.5pt; font-weight:700; margin:6mm 0 2mm 0; color:var(--accent); }
+  h4{ font-size:10pt; font-weight:700; margin:4.5mm 0 1.5mm 0; color:var(--ink); }
+
+  p{ margin:0 0 2.6mm 0; orphans:3; widows:3; }
+  ul, ol{ margin:0 0 2.8mm 0; padding-left:5.5mm; }
+  li{ margin-bottom:1.2mm; }
+  strong{ color:var(--ink); font-weight:700; }
+
+  a{ color:var(--accent); text-decoration:none; }
+
+  /* ---------- code ---------- */
+  code{
+    font-family:Consolas, "Cascadia Mono", monospace;
+    font-size:8.6pt; background:var(--code-bg);
+    padding:0.3mm 1mm; border-radius:1.5pt; color:var(--ink);
+    overflow-wrap:anywhere;
+  }
+  pre{
+    font-family:Consolas, "Cascadia Mono", monospace;
+    font-size:8.3pt; line-height:1.45;
+    background:var(--code-bg); border:0.7pt solid var(--rule-2);
+    border-left:2.2pt solid var(--accent);
+    padding:3mm 3.5mm; margin:0 0 3mm 0;
+    white-space:pre-wrap; overflow-wrap:anywhere;
+    break-inside:avoid; color:#1c2530;
+  }
+  pre code{ background:none; padding:0; font-size:inherit; }
+
+  /* ---------- tables ---------- */
+  table{
+    width:100%; table-layout:fixed; border-collapse:collapse;
+    margin:0 0 3.5mm 0; font-size:9.2pt; break-inside:avoid;
+  }
+  caption{
+    caption-side:top; text-align:left;
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size:8.3pt; letter-spacing:0.6pt; text-transform:uppercase;
+    color:var(--muted); padding-bottom:1.8mm; font-weight:600;
+  }
+  th{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size:8.4pt; font-weight:700; text-align:left;
+    background:var(--tint); color:var(--accent);
+    padding:1.8mm 2.2mm; border-bottom:0.9pt solid var(--rule);
+    letter-spacing:0.2pt;
+  }
+  td{
+    padding:1.7mm 2.2mm; border-bottom:0.6pt solid var(--rule-2);
+    vertical-align:top;
+  }
+  tr:last-child td{ border-bottom:0.9pt solid var(--rule); }
+  td.n, th.n{ text-align:right; font-variant-numeric:tabular-nums; }
+  td.mono{ font-family:Consolas, monospace; font-size:8.4pt; }
+  .pass{ color:var(--accent-2); font-weight:700; }
+  .fail{ color:var(--warn); font-weight:700; }
+
+  /* ---------- callout ---------- */
+  .note{
+    border-left:2.5pt solid var(--accent);
+    background:var(--tint);
+    padding:3.5mm 4.5mm; margin:0 0 3.5mm 0;
+    break-inside:avoid; font-size:9.6pt;
+  }
+  .note .t{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    font-size:8.2pt; letter-spacing:1pt; text-transform:uppercase;
+    font-weight:700; color:var(--accent); display:block; margin-bottom:1.5mm;
+  }
+  .note p:last-child{ margin-bottom:0; }
+
+  .note.finding{ border-left-color:var(--warn); background:#fbf3ee; }
+  .note.finding .t{ color:var(--warn); }
+
+  /* ---------- figure ---------- */
+  figure{ margin:0 0 4mm 0; break-inside:avoid; }
+  figure svg{ width:100%; height:auto; display:block; }
+  figcaption{
+    font-size:8.6pt; color:var(--muted); margin-top:2mm;
+    font-family:"Segoe UI", system-ui, sans-serif;
+  }
+
+  .page-break{ break-before:page; }
+  .tight li{ margin-bottom:0.6mm; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div class="cover-rule"></div>
+
+  <h1>Dual-Clock<br>Asynchronous FIFO</h1>
+  <p class="sub">Design, verification and hardware validation of a<br>clock-domain-crossing FIFO in Verilog</p>
+
+  <div class="who">
+    <div class="name">Jyotishman Deori</div>
+    <div class="meta">Roll No. 25M1186</div>
+    <div class="meta">M.Tech, Electronic Systems</div>
+    <div class="meta">Indian Institute of Technology Bombay</div>
+  </div>
+
+  <div class="cover-spacer"></div>
+
+  <div class="headline">
+    <h2>Result summary</h2>
+    <div class="kpis">
+      <div class="kpi">
+        <span class="n">286,176,459</span>
+        <span class="l">words verified on hardware, zero errors</span>
+      </div>
+      <div class="kpi">
+        <span class="n">0</span>
+        <span class="l">latches inferred; 0 synthesis warnings</span>
+      </div>
+      <div class="kpi">
+        <span class="n">100%</span>
+        <span class="l">functional coverage, 9 assertions clean</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <span>Self project</span>
+    <span>Verilog-2001 &middot; Xilinx Vivado 2020.2 &middot; PYNQ-Z2 (Zynq-7020)</span>
+    <span>August 2026</span>
+  </div>
+</section>
+
+<!-- ============================ 1 ============================ -->
+<h2><span class="num">1</span>Overview</h2>
+
+<p>A FIFO that moves data between two clock domains with no fixed relationship to
+each other. The design is Verilog-2001; the verification around it is
+SystemVerilog. It has been simulated, formally constrained with assertions,
+synthesised, and finally run on real silicon across two independent crystal
+oscillators.</p>
+
+<p>The motivation was specific. In my M.Tech project the PS and PL sides of an
+AXI-Stream interface sit in different clock domains, and I was relying on a
+handshake somebody else had written. I wanted to build the crossing itself
+rather than use one.</p>
+
+<table>
+  <caption>Verification summary</caption>
+  <colgroup><col style="width:31%"><col style="width:23%"><col style="width:46%"></colgroup>
+  <thead>
+    <tr><th>Stage</th><th>Tool</th><th>Outcome</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Functional simulation</td><td>ModelSim ASE 20.1</td>
+        <td>10,017 words, 0 mismatches</td></tr>
+    <tr><td>Assertions &amp; coverage</td><td>Vivado XSim 2020.2</td>
+        <td>9 properties clean, 100% coverage</td></tr>
+    <tr><td>Fault injection</td><td>both</td>
+        <td>every seeded bug detected</td></tr>
+    <tr><td>Synthesis</td><td>Vivado 2020.2</td>
+        <td>0 latches, 0 warnings</td></tr>
+    <tr><td>Hardware</td><td>PYNQ-Z2, Zynq-7020</td>
+        <td class="pass">286,176,459 words, 0 errors</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================ 2 ============================ -->
+<h2><span class="num">2</span>The problem</h2>
+
+<p>Sampling a multi-bit counter in a foreign clock domain can catch it
+mid-transition. Different bits arrive from different sides of the flop, and the
+value read is one the counter never actually held. A binary counter stepping
+<code>0111 &rarr; 1000</code> flips four bits at once; sampled at the wrong
+instant it can return anything between <code>0000</code> and
+<code>1111</code>.</p>
+
+<p>Two mechanisms fix this, and both are needed:</p>
+
+<ul>
+  <li><strong>Gray coding</strong> makes consecutive values differ in exactly one
+      bit, so a bad sample returns either the old value or the new one, never a
+      third.</li>
+  <li><strong>Two-flop synchronisers</strong> give a metastable first flop a full
+      clock period to settle before anything downstream looks at it.</li>
+</ul>
+
+<p>They solve different problems. Gray coding does nothing about metastability;
+synchronisers do nothing about multi-bit skew. Omit either and the design is
+broken in a way simulation may never show you — a claim this report later tests
+directly, and which turned out to be more literally true than expected.</p>
+
+<!-- ============================ 3 ============================ -->
+<h2><span class="num">3</span>Architecture</h2>
+
+<figure>
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Block diagram of the dual-clock FIFO">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f3d5c"/>
+    </marker>
+    <style>
+      .bx{fill:#eef3f7;stroke:#0f3d5c;stroke-width:1.4}
+      .bx2{fill:#ffffff;stroke:#5b646f;stroke-width:1.2}
+      .ln{stroke:#0f3d5c;stroke-width:1.4;fill:none;marker-end:url(#a)}
+      .lbl{font-family:'Segoe UI',sans-serif;font-size:12px;fill:#16191d}
+      .sm{font-family:'Segoe UI',sans-serif;font-size:10.5px;fill:#5b646f}
+      .dom{font-family:'Segoe UI',sans-serif;font-size:11px;fill:#0f3d5c;font-weight:700;letter-spacing:1px}
+    </style>
+  </defs>
+
+  <!-- domain split -->
+  <line x1="360" y1="8" x2="360" y2="266" stroke="#8a929c"
+        stroke-width="1.1" stroke-dasharray="5 4"/>
+  <text class="dom" x="14"  y="22">WRITE DOMAIN — wclk</text>
+  <text class="dom" x="486" y="22">READ DOMAIN — rclk</text>
+
+  <!-- memory -->
+  <rect class="bx" x="268" y="44" width="184" height="52" rx="3"/>
+  <text class="lbl" x="360" y="66"  text-anchor="middle">dual-port memory</text>
+  <text class="sm"  x="360" y="82"  text-anchor="middle">2**ASIZE × DSIZE</text>
+
+  <path class="ln" d="M 150 70 L 264 70"/>
+  <text class="sm" x="152" y="62">wdata</text>
+  <path class="ln" d="M 456 70 L 570 70"/>
+  <text class="sm" x="516" y="62">rdata</text>
+
+  <!-- write pointer -->
+  <rect class="bx2" x="40" y="126" width="128" height="40" rx="3"/>
+  <text class="lbl" x="104" y="145" text-anchor="middle">wbin counter</text>
+  <text class="sm"  x="104" y="159" text-anchor="middle">ASIZE+1 bits</text>
+
+  <rect class="bx2" x="196" y="126" width="112" height="40" rx="3"/>
+  <text class="lbl" x="252" y="145" text-anchor="middle">bin → gray</text>
+  <text class="sm"  x="252" y="159" text-anchor="middle">b ^ (b &gt;&gt; 1)</text>
+
+  <path class="ln" d="M 168 146 L 192 146"/>
+
+  <!-- w2r sync -->
+  <rect class="bx" x="392" y="126" width="128" height="40" rx="3"/>
+  <text class="lbl" x="456" y="145" text-anchor="middle">2-FF sync</text>
+  <text class="sm"  x="456" y="159" text-anchor="middle">into rclk</text>
+  <path class="ln" d="M 308 146 L 388 146"/>
+
+  <rect class="bx2" x="556" y="126" width="132" height="40" rx="3"/>
+  <text class="lbl" x="622" y="150" text-anchor="middle">rempty compare</text>
+  <path class="ln" d="M 520 146 L 552 146"/>
+
+  <!-- read pointer -->
+  <rect class="bx2" x="552" y="212" width="136" height="40" rx="3"/>
+  <text class="lbl" x="620" y="231" text-anchor="middle">rbin counter</text>
+  <text class="sm"  x="620" y="245" text-anchor="middle">ASIZE+1 bits</text>
+
+  <rect class="bx2" x="412" y="212" width="112" height="40" rx="3"/>
+  <text class="lbl" x="468" y="231" text-anchor="middle">bin → gray</text>
+  <text class="sm"  x="468" y="245" text-anchor="middle">b ^ (b &gt;&gt; 1)</text>
+  <path class="ln" d="M 548 232 L 528 232"/>
+
+  <rect class="bx" x="200" y="212" width="128" height="40" rx="3"/>
+  <text class="lbl" x="264" y="231" text-anchor="middle">2-FF sync</text>
+  <text class="sm"  x="264" y="245" text-anchor="middle">into wclk</text>
+  <path class="ln" d="M 408 232 L 332 232"/>
+
+  <rect class="bx2" x="40" y="212" width="132" height="40" rx="3"/>
+  <text class="lbl" x="106" y="236" text-anchor="middle">wfull compare</text>
+  <path class="ln" d="M 196 232 L 176 232"/>
+
+  <text class="sm" x="360" y="288" text-anchor="middle">
+    only Gray-coded pointers cross; the binary counters never leave their domain
+  </text>
+</svg>
+<figcaption>Figure 1 — Each pointer crosses once, in one direction only. The
+binary counters stay in their own domain; only their Gray-coded copies cross,
+and each crossing passes through a two-flop synchroniser.</figcaption>
+</figure>
+
+<p>The design is two files. <code>rtl/sync_2ff.v</code> is the synchroniser,
+kept as a separate module so that it is visibly present rather than buried;
+<code>rtl/async_fifo.v</code> is everything else. The structure follows Cliff
+Cummings, <em>Simulation and Synthesis Techniques for Asynchronous FIFO
+Design</em> (SNUG 2002).</p>
+
+<pre><code>module async_fifo #(
+    parameter DSIZE = 8,
+    parameter ASIZE = 4               // depth = 2**ASIZE
+) (
+    input  wire             wclk, wrst_n, winc,
+    input  wire [DSIZE-1:0] wdata,
+    output reg              wfull,
+
+    input  wire             rclk, rrst_n, rinc,
+    output wire [DSIZE-1:0] rdata,
+    output reg              rempty
+);</code></pre>
+
+<h3>3.1 The parts that are easy to get wrong</h3>
+
+<p><strong>Pointers are one bit wider than the address.</strong> With
+<code>ASIZE</code> address bits the pointers are <code>ASIZE+1</code> bits. That
+extra bit is the only thing distinguishing full from empty, since in both cases
+the addresses are equal.</p>
+
+<p><strong>Empty</strong> is when the read pointer has caught up, so every bit
+matches:</p>
+
+<pre><code>rempty = (rgray_next == rq2_wptr);</code></pre>
+
+<p><strong>Full</strong> is when the write pointer has wrapped once more than
+the read pointer and caught it. Same low bits, but the top <em>two</em> bits
+inverted:</p>
+
+<pre><code>wfull = (wgray_next ==
+         {~wq2_rptr[ASIZE], ~wq2_rptr[ASIZE-1], wq2_rptr[ASIZE-2:0]});</code></pre>
+
+<p>Two bits, not one. In Gray code both the MSB and the bit beneath it flip when
+the counter passes the halfway point, so comparing with only the top bit
+inverted detects the halfway crossing rather than the wrap. This is the single
+most likely place to introduce a bug, and it is the fault deliberately injected
+in §5.3.</p>
+
+<p>Both flags are computed from the <em>next</em> pointer value rather than the
+registered one, so they assert on the same edge the FIFO actually fills or
+empties instead of one cycle late.</p>
+
+<div class="note">
+  <span class="t">Looks like a bug, is not</span>
+  <p>Each side only ever sees a copy of the other pointer that is two clocks
+  stale, so <code>wfull</code> can remain asserted briefly after a read has
+  freed space, and <code>rempty</code> briefly after a write. The FIFO reports
+  itself fuller or emptier than it truly is. It never errs in the opposite
+  direction, which is the only one that could cause overflow or underflow.</p>
+</div>
+
+<!-- ============================ 4 ============================ -->
+<h2 class="page-break"><span class="num">4</span>Verification strategy</h2>
+
+<p>One directed test passing says almost nothing about a CDC design. What finds
+bugs is stalling both interfaces at random and running the clocks at a ratio the
+design was not written for.</p>
+
+<h3>4.1 Simulation</h3>
+
+<p>The testbench runs two phases in a single simulation: fast write against slow
+read (7 ns / 11 ns), then the reverse. Periods of 7 and 11 are deliberate;
+related periods such as 10 and 20 align their edges and conceal exactly the
+class of bug being hunted. A reference queue is pushed on the write side and
+popped and compared on the read side, with both enables randomised so that full
+and empty are genuinely reached.</p>
+
+<p>Each phase ends by stopping the writes and reading until the FIFO is empty,
+so that every word written is compared on the way out. Without that drain,
+several hundred words remain in the FIFO at the end of a phase and are never
+checked.</p>
+
+<table>
+  <caption>ModelSim ASE 20.1 — functional testbench</caption>
+  <colgroup><col style="width:62%"><col style="width:38%"></colgroup>
+  <tbody>
+    <tr><td>Clock ratios exercised</td><td class="n">7/11 ns and 11/7 ns</td></tr>
+    <tr><td>Words written and compared</td><td class="n">10,017</td></tr>
+    <tr><td>Data mismatches</td><td class="n pass">0</td></tr>
+    <tr><td>Overflows / underflows</td><td class="n pass">0 / 0</td></tr>
+    <tr><td>Words left unchecked</td><td class="n pass">0</td></tr>
+    <tr><td>Cycles spent full / empty</td><td class="n">12,678 / 12,419</td></tr>
+    <tr><td>Back-to-back writes</td><td class="n">3,025</td></tr>
+    <tr><td>Concurrent read and write</td><td class="n">3,546</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 Assertions and functional coverage</h3>
+
+<p>ModelSim ASE supports neither SVA nor covergroups, so the assertion layer
+runs under Vivado XSim. The checker is <code>bind</code>-ed onto the DUT rather
+than written inside it, keeping the synthesisable RTL free of verification
+code.</p>
+
+<p>Nine properties are checked. The most important is the Gray property itself,
+which directly tests the premise the whole design rests on:</p>
+
+<pre><code>a_wgray_one_bit: assert property (
+    @(posedge wclk) disable iff (!wrst_n)
+    $countones(wgray ^ $past(wgray)) &lt;= 1
+);</code></pre>
+
+<p>Others confirm that occupancy never exceeds the depth (which, in modular
+pointer arithmetic, catches underflow as well as overflow), that the flags
+genuinely gate the pointers, that pointers only ever hold or step by one, and
+that the reset state is correct.</p>
+
+<table>
+  <caption>Vivado XSim 2020.2 — assertions and coverage</caption>
+  <colgroup><col style="width:62%"><col style="width:38%"></colgroup>
+  <tbody>
+    <tr><td>Words written and compared</td><td class="n">10,015</td></tr>
+    <tr><td>Assertion failures across 9 properties</td><td class="n pass">0</td></tr>
+    <tr><td>Write interface coverage</td><td class="n">100%</td></tr>
+    <tr><td>Read interface coverage</td><td class="n">100%</td></tr>
+    <tr><td>Occupancy coverage (empty and full bins)</td><td class="n">100%</td></tr>
+    <tr><td>Concurrent access coverage</td><td class="n">100%</td></tr>
+  </tbody>
+</table>
+
+<p>The word counts differ by two between simulators because the stimulus is
+randomised and the two implementations of <code>$urandom</code> do not produce
+the same stream from the same seed.</p>
+
+<h3>4.3 Fault injection</h3>
+
+<p>A test that has never failed is not evidence. Before any of the numbers above
+were trusted, the design was broken deliberately and everything re-run.</p>
+
+<table>
+  <caption>Seeded faults and what caught them</caption>
+  <colgroup><col style="width:48%"><col style="width:52%"></colgroup>
+  <thead><tr><th>Injected fault</th><th>Detected by</th></tr></thead>
+  <tbody>
+    <tr><td>Full comparison with only the MSB inverted</td>
+        <td>Occupancy check and scoreboard, within 500 ns</td></tr>
+    <tr><td>The same fault, under XSim</td>
+        <td><code>a_no_overflow</code>: <em>occupancy 17 exceeds depth 16</em></td></tr>
+    <tr><td>Gray coding removed entirely</td>
+        <td class="fail">Nothing. The full testbench passed.</td></tr>
+  </tbody>
+</table>
+
+<p>That last result is the most interesting outcome of the whole project and is
+the subject of the next section.</p>
+
+<!-- ============================ 5 ============================ -->
+<h2><span class="num">5</span>Does the Gray coding actually do anything?</h2>
+
+<p>With the crossing switched to raw binary pointers — using the matching binary
+full and empty tests, so that the encoding was the only variable — the entire
+testbench passed. Zero mismatches, both clock ratios, full and empty both
+reached.</p>
+
+<p>The reason is that in RTL simulation every bit of a bus changes at exactly
+the same instant. There is no skew, so there is no window in which a sampler can
+catch part of an old value and part of a new one. The hazard Gray coding exists
+to prevent is invisible at this level of abstraction.</p>
+
+<p>Demonstrating it therefore required injecting per-bit transport delay on the
+crossing bus by hand, and counting how often a domain latched that bus while it
+was still settling. Two corrections were needed before the experiment measured
+anything at all:</p>
+
+<ul>
+  <li><strong>The delay pattern must not be monotonic.</strong> Delaying bit
+      <em>i</em> by <em>i</em> × step means the low bits always move first, so
+      the transient value is always <em>smaller</em> than both the old and new
+      pointer. That direction is harmless: a pointer reading low merely makes
+      the other side believe the FIFO is fuller, or emptier, than it is, which
+      is the pessimistic direction the design already tolerates.</li>
+  <li><strong>The clocks must not be rationally related.</strong> With 7 ns and
+      11 ns, a read edge only ever falls a whole number of nanoseconds after a
+      write edge — eleven fixed sampling phases, which step over most of the
+      sub-nanosecond windows of interest. Changing the read clock to 11.3 ns
+      lets the phase drift through everything, as two real oscillators do.</li>
+</ul>
+
+<table>
+  <caption>Skew sweep — 4,000 transactions per case, wclk 7.0 ns, rclk 11.3 ns</caption>
+  <colgroup>
+    <col style="width:20%"><col style="width:20%"><col style="width:20%">
+    <col style="width:20%"><col style="width:20%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th class="n">Skew (ns)</th>
+      <th class="n">Gray caught<br>mid-flight</th><th class="n">Gray errors</th>
+      <th class="n">Binary caught<br>mid-flight</th><th class="n">Binary errors</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="n">0.0</td><td class="n">0</td><td class="n pass">0</td><td class="n">0</td><td class="n">0</td></tr>
+    <tr><td class="n">0.4</td><td class="n">413</td><td class="n pass">0</td><td class="n">649</td><td class="n">0</td></tr>
+    <tr><td class="n">1.0</td><td class="n">895</td><td class="n pass">0</td><td class="n">1,391</td><td class="n">0</td></tr>
+    <tr><td class="n">2.0</td><td class="n">1,840</td><td class="n pass">0</td><td class="n">2,505</td><td class="n">0</td></tr>
+    <tr><td class="n">3.5</td><td class="n">3,234</td><td class="n pass">0</td><td class="n">5,785</td><td class="n fail">3,513</td></tr>
+  </tbody>
+</table>
+
+<p>Skew is quoted as the per-bit step; worst-case spread across the bus is three
+times that figure. Gray remains at zero errors throughout. In the final row it
+was caught mid-transition 3,234 times and still did not corrupt or drop a single
+word, because only one bit ever moves: catch it early or late and the result is
+the old value or the new one, and both are safe.</p>
+
+<h3>5.1 Why binary survives small skew</h3>
+
+<p>Binary needs more explanation, since it survives the first three rows despite
+thousands of mid-transition samples. A transient only exists while a pointer is
+<em>moving</em>, and a pointer moves only when that side has actually done
+something. If the write domain latches a corrupted read pointer, the corruption
+is itself proof that a read just occurred, which means a slot genuinely was
+freed. The garbage breaks the equality test for exactly one cycle, so at most
+one extra write slips through, and that write had somewhere to go.</p>
+
+<p>The argument holds only while the transient is shorter than a destination
+clock period, so that just one sampling edge can fall inside it. At 3.5 ns the
+bus spread is 10.5 ns against a 7 ns write clock; the bad value now survives
+across consecutive edges, several operations slip through per event, and the
+self-limiting property collapses. 89% of words read came back wrong.</p>
+
+<div class="note">
+  <span class="t">Conclusion</span>
+  <p>Binary pointers are not merely riskier than Gray. They are correct only
+  while skew stays below a bound nobody checks, on a path that is by definition
+  unconstrained, and they fail completely rather than gracefully once that bound
+  is crossed. Gray coding has no such bound: the guarantee is structural rather
+  than a matter of degree.</p>
+</div>
+
+<!-- ============================ 6 ============================ -->
+<h2 class="page-break"><span class="num">6</span>Synthesis</h2>
+
+<p>Synthesised out of context for <code>xc7z020clg400-1</code>. The purpose is
+not a bitstream but three questions: were any latches inferred, is the size
+sane, and did the tool recognise both crossings.</p>
+
+<table>
+  <caption>Vivado 2020.2 — out-of-context synthesis</caption>
+  <colgroup><col style="width:62%"><col style="width:38%"></colgroup>
+  <tbody>
+    <tr><td>Errors / warnings / critical warnings</td><td class="n pass">0 / 0 / 0</td></tr>
+    <tr><td>Latches inferred</td><td class="n pass">0</td></tr>
+    <tr><td>Slice LUTs</td><td class="n">28 (20 logic, 8 distributed RAM)</td></tr>
+    <tr><td>Slice registers</td><td class="n">40, all flip-flops</td></tr>
+    <tr><td>Block RAM / DSP</td><td class="n">0 / 0</td></tr>
+  </tbody>
+</table>
+
+<p>The 16×8 memory was mapped to distributed RAM rather than a block RAM, which
+is expected at this size; a BRAM would sit almost entirely empty.</p>
+
+<p>Vivado's CDC report locates both crossings, at depth 2, carrying the
+<code>ASYNC_REG</code> property and covered by the asynchronous clock group:</p>
+
+<pre><code>CDC-3  Info      2   1-bit synchronized with ASYNC_REG property
+CDC-6  Warning   2   Multi-bit synchronized with ASYNC_REG property</code></pre>
+
+<p>The CDC-6 warnings are correct, and their absence would be more concerning
+than their presence. Vivado can see a multi-bit bus entering a two-flop
+synchroniser, which is normally a genuine bug, and nothing tells it that this
+particular bus is Gray coded.</p>
+
+<div class="note">
+  <span class="t">Unplanned observation</span>
+  <p>The report sources the top pointer bit from <code>wbin_reg[4]</code> rather
+  than <code>wgray_reg[4]</code>. The MSB of a Gray code equals the MSB of the
+  binary it was derived from, so <code>bin ^ (bin &gt;&gt; 1)</code> leaves that
+  bit untouched and synthesis simply removed the duplicate register.</p>
+</div>
+
+<!-- ============================ 7 ============================ -->
+<h2><span class="num">7</span>Hardware validation on a PYNQ-Z2</h2>
+
+<p>Simulation said the design worked. Simulation also said it worked with the
+Gray coding removed, so the final step was real silicon.</p>
+
+<h3>7.1 Why the clock choice matters</h3>
+
+<p>The value of a hardware run lies entirely in the clocks, so that is the part
+worth getting right. The straightforward approach — take the board's 125 MHz
+oscillator and derive a second frequency from it with an MMCM — would have been
+substantially less work and would have proved very little. Two clocks from one
+MMCM are phase locked: the relationship between their edges is fixed and
+repeats, so sampling occurs at the same handful of relative phases indefinitely
+and the synchroniser may never once be caught inside its setup/hold window. It
+would resemble a hardware test while demonstrating less than the simulation
+already had.</p>
+
+<p>Instead <code>wclk</code> is <code>FCLK_CLK0</code>, derived from the PS PLL
+and the 33.333 MHz crystal, while <code>rclk</code> is the separate 125 MHz
+board oscillator. Two crystals, no common reference. They drift against one
+another continuously, so across a ten-second run the sampling point sweeps
+through every phase relationship there is, including those that land a
+synchroniser input precisely on its edge. The Zynq PS is present in the design
+for this reason alone; nothing else in it is used.</p>
+
+<h3>7.2 The test harness</h3>
+
+<p>The simulation testbench rebuilt as synthesisable logic: an LFSR generates
+the write data, an identical LFSR on the read side predicts what should return,
+and a comparator counts words that do not match. A second pair of LFSRs stalls
+both interfaces so that full and empty are reached. Counters are read back over
+JTAG through a VIO core.</p>
+
+<p>If the FIFO ever drops or duplicates a single word, the read side's replica
+falls permanently out of step and every subsequent word counts as an error. A
+one-word failure therefore appears as tens of millions of errors rather than as
+one, which is the desired behaviour from a checker.</p>
+
+<table>
+  <caption>PYNQ-Z2 (xc7z020clg400-1) — two phases, ten seconds each</caption>
+  <colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+  <thead>
+    <tr><th>Phase</th><th class="n">Written</th><th class="n">Read</th><th class="n">Errors</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1 — write fast, read slow</td><td class="n">159,905,237</td>
+        <td class="n">159,905,221</td><td class="n pass">0</td></tr>
+    <tr><td>2 — write slow, read fast</td><td class="n">286,176,459</td>
+        <td class="n">286,176,459</td><td class="n pass">0</td></tr>
+  </tbody>
+</table>
+
+<table>
+  <caption>Hardware result</caption>
+  <colgroup><col style="width:62%"><col style="width:38%"></colgroup>
+  <tbody>
+    <tr><td>Words written and checked</td><td class="n">286,176,459</td></tr>
+    <tr><td>Data errors</td><td class="n pass">0</td></tr>
+    <tr><td>Reached full / empty</td><td class="n pass">yes / yes</td></tr>
+    <tr><td>Worst setup slack (WNS)</td><td class="n">1.997 ns</td></tr>
+    <tr><td>Worst hold slack (WHS)</td><td class="n">0.061 ns</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="t">The residual is the depth</span>
+  <p>Phase 1 finishes sixteen words short of what it wrote, and the FIFO is
+  exactly sixteen deep. The phase stops with the writer running flat out against
+  a slow reader, so the FIFO is full at the instant writes cease and is still
+  holding a full sixteen words that have not been read. Phase 2 inverts the
+  rates, the reader drains them and then keeps pace, and the totals finish
+  exactly equal. The difference is not noise; it is the depth.</p>
+</div>
+
+<p>For scale, the simulation checked 10,017 words. The hardware run checked
+roughly 28,000 times more, on real routing with real metastability, in twenty
+seconds.</p>
+
+<h3>7.3 A fault found in the harness</h3>
+
+<div class="note finding">
+  <span class="t">CDC-10 — combinational logic before a synchroniser</span>
+  <p>The first build reported a path from the VIO's output register directly to
+  <code>wrst_sync_reg[0]/CLR</code>. The reset had been written as a single
+  line, <code>arst_n = fclk_rst_n &amp;&amp; !vio_rst</code>, feeding both reset
+  synchronisers. That AND gate sat on the asynchronous clear pin of a
+  synchroniser flop, where a glitch would reset one clock domain and not the
+  other, leaving the FIFO's two pointers disagreeing about where the data
+  begins. That is precisely the failure this project exists to prevent,
+  occurring inside the harness built to demonstrate it does not happen.</p>
+  <p>The reset is now built in three stages: <code>fclk_rst_n</code> is the only
+  asynchronous reset and has no logic in front of it, the soft reset crosses
+  into the write domain through a <code>sync_2ff</code> like any other control
+  bit, and the two are combined and registered before anything downstream sees
+  them.</p>
+</div>
+
+<p>The full-design CDC report also raises 32 CDC-1 criticals, all running from
+the FIFO memory to the comparator. These are correct as they stand: data is
+written on <code>wclk</code> and read on <code>rclk</code> with no synchroniser
+in between, which is exactly what a CDC checker should flag, except that the
+pointer protocol guarantees the read side only ever addresses words written at
+least two synchroniser stages earlier. The data has been stationary for several
+clocks by the time anything reads it. Vivado can see wires, not protocols.
+Notably this did not appear in the out-of-context run, because there
+<code>rdata</code> terminates at a port with no consumer logic to trace into.</p>
+
+<!-- ============================ 8 ============================ -->
+<h2><span class="num">8</span>What this does not prove</h2>
+
+<p>The skew experiment models bus skew, not metastability. Its synchroniser is
+two ideal flops that resolve instantly, so nothing in it speaks to MTBF, and no
+amount of Gray coding removes the need for the synchroniser. The two mechanisms
+address different problems and only one of them is exercised there.</p>
+
+<p>The hardware run says nothing about MTBF either. Twenty seconds of two
+drifting clocks is a thorough sweep of the phase space but it is not a
+synchroniser reliability measurement, and a two-flop synchroniser has a finite
+failure rate that a run of this length would not expose. Nothing here justifies
+two flops over three at a higher frequency; that is an MTBF calculation, not a
+test.</p>
+
+<!-- ============================ 9 ============================ -->
+<h2><span class="num">9</span>Reproducing the results</h2>
+
+<pre><code># functional testbench (ModelSim)
+export PATH="/c/intelFPGA_lite/20.1/modelsim_ase/win32aloem:$PATH"
+cd sim &amp;&amp; vsim -c -do run.do
+
+# assertions and functional coverage (Vivado XSim)
+cd sim &amp;&amp; ./run_xsim.sh
+
+# latch and CDC check
+export PATH="/c/Xilinx/Vivado/2020.2/bin:$PATH"
+vivado -mode batch -source synth/synth_check.tcl
+
+# the CDC encoding experiment
+cd sim &amp;&amp; vsim -c -do run_experiment.do
+
+# hardware: build, program, run
+vivado -mode batch -source hw/build.tcl
+xsdb hw/program.tcl
+vivado -mode batch -source hw/run_hw_test.tcl</code></pre>
+
+<p>Raw transcripts for every figure quoted in this report are committed under
+<code>results/</code>. No number appears here that was not read out of one of
+them.</p>
+
+<table>
+  <caption>Repository layout</caption>
+  <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+  <tbody>
+    <tr><td class="mono">rtl/</td><td>the design; the only thing synthesised</td></tr>
+    <tr><td class="mono">tb/</td><td>testbench, plus the bound SVA and covergroup checker</td></tr>
+    <tr><td class="mono">sim/</td><td>ModelSim and XSim run scripts</td></tr>
+    <tr><td class="mono">synth/</td><td>Vivado latch and CDC check</td></tr>
+    <tr><td class="mono">hw/</td><td>PYNQ-Z2 build, programming and hardware test</td></tr>
+    <tr><td class="mono">experiments/</td><td>deliberately broken variants, kept for what they showed</td></tr>
+    <tr><td class="mono">results/</td><td>raw transcripts of every run quoted</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
