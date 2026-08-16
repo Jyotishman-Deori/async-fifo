@@ -72,28 +72,30 @@ both are safe.
 Binary needs more explaining, because it survives the first three rows despite
 being caught mid-transition thousands of times.
 
-## Why binary survives small skew
+## What the numbers do and do not show
 
-A transient only exists while a pointer is *moving*, and a pointer moves only
-when that side has actually done something. If the write domain latches a
-corrupted read pointer, the corruption is proof that a read just happened, which
-means a slot genuinely was freed. The garbage breaks the equality test for
-exactly one cycle, `wfull` drops for exactly one cycle, and at most one extra
-write slips through. That write had somewhere to go. Same argument on the other
-side: a corrupted write pointer means a write really did happen, so the data the
-read side goes after is really there.
+Binary survives the first three rows despite thousands of mid-transition
+captures, and only fails in the last, where the spread across the bus is
+10.5 ns against a 7 ns write clock and a corrupted value can survive across
+consecutive sampling edges rather than a single one.
 
-It holds because the transient is shorter than a destination clock period, so
-only one sampling edge can land inside it. That is what breaks at 3.5 ns, where
-the bus spread is 10.5 ns against a 7 ns write clock: the bad value now survives
-across consecutive edges, several extra operations slip through per event, and
-the self-limiting argument collapses. 89% of the words read came out wrong.
+That threshold is the important caveat. A 10.5 ns spread is far larger than
+routing skew on a real design, so the honest reading is narrow: this shows the
+failure mechanism is real and that Gray coding is immune to it. It does not
+show that binary pointers would fail in a typical implementation, and the
+zeroes in the first three rows are evidence against that stronger claim rather
+than for it.
 
-So binary is not merely riskier than Gray. It is correct only while the skew
-stays under a bound nobody checks, on a path that is by definition unconstrained,
-and it fails completely rather than gracefully once that bound is crossed. Gray
-has no such bound, because the guarantee is structural rather than a matter of
-degree.
+Two of the choices needed to produce a failure at all were changes I made after
+earlier versions showed nothing: the non-monotonic delay pattern and the
+incommensurate clocks. Both make the model more physically realistic, which is
+why I made them, but it is a further reason to read the table as a
+demonstration rather than a measurement.
+
+What it does establish is an asymmetry. Gray coding has no threshold to find,
+because only one bit moves and there is no amount of skew at which a sampler can
+read a value the counter never held. Binary has one, and nothing in the design
+flow tells you where it is.
 
 ## Running it
 

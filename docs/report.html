@@ -967,27 +967,28 @@ only once the transient outlives a destination clock period (right).</div>
 captured mid-transition 3,234 times without corrupting or dropping a single word,
 because only one bit is ever in motion.</p>
 
-<p>The binary result requires more explanation, since it survives the first three rows
-despite thousands of mid-transition captures. A transient exists only while a pointer
-is moving, and a pointer moves only when the domain that owns it has performed an
-operation. If the write domain latches a corrupted read pointer, the corruption is
-itself evidence that a read has just occurred, and therefore that a location has
-genuinely been freed. The corrupted value breaks the equality test for exactly one
-cycle, so at most one additional write is admitted, and that write had somewhere to
-go.</p>
+<p>Binary survives the first three rows despite thousands of mid-transition
+captures, and fails only in the last, where the spread across the bus is
+10.5&nbsp;ns against a 7&nbsp;ns write clock and a corrupted value can survive across
+consecutive sampling edges rather than a single one.</p>
 
-<p>This self-limiting property holds only while the transient is shorter than a
-destination clock period, so that at most one sampling edge can fall inside it. At a
-step of 3.5&nbsp;ns the spread across the bus is 10.5&nbsp;ns against a 7&nbsp;ns write
-clock; the corrupted value now survives across consecutive edges, several operations
-are admitted per event, and the argument collapses. Eighty-nine per cent of the words
-read were wrong.</p>
+<p>That threshold is the important caveat, and it limits what the experiment proves.
+A 10.5&nbsp;ns spread is far larger than routing skew on a real design, so the honest
+reading is narrow: the experiment demonstrates that the failure mechanism is real and
+that Gray coding is immune to it. It does not show that binary pointers would fail in a
+typical implementation, and the zeroes in the first three rows are evidence against that
+stronger claim rather than for it.</p>
 
-<p>Binary pointers are therefore not merely a riskier choice than Gray. They are
-correct only while skew remains below a bound that nobody specifies or checks, on a
-path that is by definition unconstrained, and they fail completely rather than
-gracefully once that bound is crossed. The guarantee provided by Gray coding is
-structural and has no such threshold.</p>
+<p>Two of the choices needed to produce a failure at all were made after earlier
+versions of the experiment showed nothing: the non-monotonic delay pattern and the
+incommensurate clocks, both described in Section&nbsp;4.5. Each makes the model more
+physically realistic, which is why they were adopted, but it is a further reason to read
+Table&nbsp;7 as a demonstration rather than a measurement.</p>
+
+<p>What the experiment establishes is therefore an asymmetry rather than a verdict.
+Gray coding has no threshold to find, because only one bit moves and there is no amount
+of skew at which a sampler can read a value the counter never held. Binary has a
+threshold, and nothing in the design flow reports where it is.</p>
 
 <h3 class="sub">5.5 Synthesis Results</h3>
 

@@ -162,7 +162,13 @@ doc.set_metadata({
     "keywords": "FIFO, CDC, Gray code, synchroniser, metastability, Verilog, "
                 "SystemVerilog, SVA, Vivado, PYNQ-Z2, Zynq-7020",
 })
-doc.save(OUT, garbage=4, deflate=True)
+try:
+    doc.save(OUT, garbage=4, deflate=True)
+except Exception as exc:
+    # Almost always a PDF viewer holding the previous build open.
+    doc.close()
+    sys.exit(f"could not write {OUT}\n  {exc}\n"
+             "  close whatever has the report open and run this again")
 n_pages = doc.page_count
 doc.close()
 
