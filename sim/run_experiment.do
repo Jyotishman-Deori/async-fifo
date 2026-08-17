@@ -9,7 +9,7 @@ vlib work_exp
 # consistent unit across all three files vsim refuses to elaborate.
 vlog -timescale 1ns/1ps -work work_exp ../rtl/sync_2ff.v
 vlog -timescale 1ns/1ps -work work_exp ../experiments/async_fifo_exp.v
-vlog -sv -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.sv
+vlog -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.v
 
 vsim -c -voptargs="+acc" work_exp.tb_cdc_experiment
 run -all

@@ -59,13 +59,13 @@ worst-case spread across the bus is 3x that.
 | skew (ns) | Gray midflight | Gray errors | binary midflight | binary errors |
 |---|---|---|---|---|
 | 0.0 | 0 | 0 | 0 | 0 |
-| 0.4 | 413 | 0 | 649 | 0 |
-| 1.0 | 895 | 0 | 1391 | 0 |
-| 2.0 | 1840 | 0 | 2505 | 0 |
-| 3.5 | 3234 | **0** | 5785 | **3513** |
+| 0.4 | 427 | 0 | 637 | 0 |
+| 1.0 | 899 | 0 | 1401 | 0 |
+| 2.0 | 1816 | 0 | 2525 | 0 |
+| 3.5 | 3270 | **0** | 5691 | **3664** |
 
 Gray is flat at zero the whole way. At the last row it was caught mid-transition
-3234 times and still did not drop or corrupt a single word, because only one bit
+3270 times and still did not drop or corrupt a single word, because only one bit
 ever moves. Catch it early or late and you get the old value or the new one, and
 both are safe.
 

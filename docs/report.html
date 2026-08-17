@@ -176,7 +176,7 @@
 
   <div class="band"></div>
   <h1>Design and Verification of a Dual-Clock Asynchronous FIFO
-    <span class="l2">Gray-Coded Pointer Crossing, Assertion-Based Verification
+    <span class="l2">Gray-Coded Pointer Crossing, Scoreboard Verification
     and Hardware Validation on PYNQ-Z2</span>
   </h1>
   <div class="band-b"></div>
@@ -207,9 +207,8 @@ so that a pointer sampled by the opposite domain is never a value the counter di
 not actually hold.</p>
 
 <p>The design was verified with a randomised scoreboard testbench under ModelSim,
-checked with nine SystemVerilog assertions and functional coverage under Vivado
-XSim, and synthesised for the Zynq XC7Z020 with no inferred latches and no
-warnings. It was then implemented on a PYNQ-Z2 board, with the write domain
+cross-checked under a second simulator, Vivado XSim, and synthesised for the
+Zynq XC7Z020 with no inferred latches and no warnings. It was then implemented on a PYNQ-Z2 board, with the write domain
 clocked from the processing system PLL and the read domain from the board's
 independent 125 MHz oscillator, where it transferred 286,176,459 words with zero
 errors while reaching both the full and empty conditions.</p>
@@ -228,7 +227,7 @@ errors while reaching both the full and empty conditions.</p>
 
 <div class="toc-line top"><span class="num">3</span><span class="t">Verification</span><span class="dots"></span><span class="pn" data-find="3. Verification"></span></div>
 <div class="toc-line sub"><span class="num">3.1</span><span class="t">Simulation Testbench</span><span class="dots"></span><span class="pn" data-find="3.1 Simulation Testbench"></span></div>
-<div class="toc-line sub"><span class="num">3.2</span><span class="t">Assertions and Coverage</span><span class="dots"></span><span class="pn" data-find="3.2 Assertions and Coverage"></span></div>
+<div class="toc-line sub"><span class="num">3.2</span><span class="t">Checks and Coverage</span><span class="dots"></span><span class="pn" data-find="3.2 Checks and Coverage"></span></div>
 <div class="toc-line sub"><span class="num">3.3</span><span class="t">Fault Injection</span><span class="dots"></span><span class="pn" data-find="3.3 Fault Injection"></span></div>
 
 <div class="toc-line top"><span class="num">4</span><span class="t">Results</span><span class="dots"></span><span class="pn" data-find="4. Results"></span></div>
@@ -419,47 +418,44 @@ empty, so that every word written is compared on the way out. Without this drain
 few hundred words remain in the FIFO at the end of a phase and are never
 checked.</p>
 
-<h3 class="sub">3.2 Assertions and Coverage</h3>
+<h3 class="sub">3.2 Checks and Coverage</h3>
 
-<p>ModelSim ASE supports neither SystemVerilog assertions nor covergroups, so the
-assertion layer runs under Vivado XSim against the same design and the same
-testbench. The checker is attached using <code>bind</code>, so no verification
-code appears in the synthesisable source. Nine properties are checked.</p>
+<p>The whole project is Verilog-2001, which has neither assertions nor covergroups, so
+the checks are written procedurally inside the testbench and the coverage points are
+counted by hand. Table&nbsp;2 lists what is verified on every transfer. The same
+testbench is then run under a second simulator, Vivado XSim, as a cross-check: a design
+that passes on one tool and fails on another usually has a race the first happened to
+resolve in its favour.</p>
 
 <div class="tw">
-<div class="tcap">Table 2: Assertions checked on the design</div>
+<div class="tcap">Table 2: Checks applied during every run</div>
 <table class="full">
   <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
-  <thead><tr><th>Property</th><th>Statement</th></tr></thead>
+  <thead><tr><th>Check</th><th>What it verifies</th></tr></thead>
   <tbody>
-    <tr><td class="mono">a_wgray_one_bit</td><td>Write Gray pointer changes at most one bit per cycle</td></tr>
-    <tr><td class="mono">a_rgray_one_bit</td><td>Read Gray pointer changes at most one bit per cycle</td></tr>
-    <tr><td class="mono">a_no_overflow</td><td>Occupancy never exceeds the configured depth</td></tr>
-    <tr><td class="mono">a_no_write_when_full</td><td>Write pointer does not advance while full</td></tr>
-    <tr><td class="mono">a_no_read_when_empty</td><td>Read pointer does not advance while empty</td></tr>
-    <tr><td class="mono">a_wptr_step</td><td>Write pointer holds or advances by exactly one</td></tr>
-    <tr><td class="mono">a_rptr_step</td><td>Read pointer holds or advances by exactly one</td></tr>
-    <tr><td class="mono">a_reset_not_full</td><td><code>wfull</code> is deasserted during reset</td></tr>
-    <tr><td class="mono">a_reset_empty</td><td><code>rempty</code> is asserted during reset</td></tr>
+    <tr><td>Data</td><td>Every word read is compared against the reference queue</td></tr>
+    <tr><td>Order</td><td>The reference queue is FIFO, so any reordering appears as a mismatch</td></tr>
+    <tr><td>Overflow</td><td>Occupancy, taken from the design's own pointers, never exceeds the depth</td></tr>
+    <tr><td>Underflow</td><td>No read is accepted before a matching word has been written</td></tr>
+    <tr><td>Drain</td><td>Every word written during a phase is read back before that phase ends</td></tr>
   </tbody>
 </table>
 </div>
 
-<p>Four covergroups record whether the interesting conditions were actually
-reached: the write and read interfaces crossed with their request signals, the
-occupancy distribution including both the empty and the full bins, and concurrent
-activity on both interfaces. A test that passes without ever filling or emptying
-the FIFO demonstrates very little, so coverage is reported alongside every
-result.</p>
+<p>Four coverage counters record whether the interesting conditions were actually
+reached: cycles spent full, cycles spent empty, back-to-back writes, and simultaneous
+read and write. A test that passes without ever filling or emptying the FIFO has
+demonstrated very little, so the testbench reports these alongside every result and
+declares a run inconclusive, rather than passed, if any of them is zero.</p>
 
 <h3 class="sub">3.3 Fault Injection</h3>
 
 <p>To confirm that the verification is capable of detecting a defect, the full
 comparison of Equation (3) was deliberately altered to invert only the
 most-significant bit, and the whole flow was re-run. The scoreboard and the
-occupancy check reported failures within 500 ns of simulation time, and under XSim
-the <code>a_no_overflow</code> assertion reported <em>occupancy 17 exceeds depth
-16</em>. The correct comparison was then restored.</p>
+occupancy check reported failures within 500 ns of simulation time, the occupancy check
+printing <em>OVERFLOW: occupancy 17, depth is 16</em>. The correct comparison was then
+restored.</p>
 
 <!-- ======================= 4 ======================= -->
 <h2 class="sec">4. Results</h2>
@@ -467,25 +463,25 @@ the <code>a_no_overflow</code> assertion reported <em>occupancy 17 exceeds depth
 <h3 class="sub">4.1 Simulation</h3>
 
 <div class="tw">
-<div class="tcap">Table 3: Simulation and assertion results</div>
+<div class="tcap">Table 3: Simulation results under both simulators</div>
 <table class="full">
   <colgroup><col style="width:52%"><col style="width:24%"><col style="width:24%"></colgroup>
   <thead><tr><th>Metric</th><th class="n">ModelSim</th><th class="n">XSim</th></tr></thead>
   <tbody>
-    <tr><td>Words written and compared</td><td class="n">10,017</td><td class="n">10,015</td></tr>
+    <tr><td>Words written and compared</td><td class="n">10,017</td><td class="n">10,017</td></tr>
     <tr><td>Data mismatches</td><td class="n pass">0</td><td class="n pass">0</td></tr>
     <tr><td>Overflows / underflows</td><td class="n pass">0 / 0</td><td class="n pass">0 / 0</td></tr>
-    <tr><td>Assertion failures</td><td class="n">not supported</td><td class="n pass">0</td></tr>
-    <tr><td>Functional coverage</td><td class="n">not supported</td><td class="n">100 %</td></tr>
-    <tr><td>Cycles at full / at empty</td><td class="n">12,678 / 12,419</td><td class="n">&mdash;</td></tr>
+    <tr><td>Undrained words</td><td class="n pass">0</td><td class="n pass">0</td></tr>
+    <tr><td>Cycles at full / at empty</td><td class="n">12,579 / 12,611</td><td class="n">12,609 / 12,592</td></tr>
+    <tr><td>Back-to-back writes</td><td class="n">2,991</td><td class="n">2,996</td></tr>
   </tbody>
 </table>
 </div>
 
 <p>Both boundary conditions were reached in quantity, which is what makes the zero
-mismatch count meaningful. The word counts differ slightly between the two
-simulators because the stimulus is randomised and their implementations of
-<code>$urandom</code> do not produce identical sequences from the same seed.</p>
+mismatch count meaningful. The two simulators agree exactly on the word count; the
+coverage counters differ by a few, because they are sampled on clock edges whose
+relative alignment the two tools resolve slightly differently.</p>
 
 <h3 class="sub">4.2 Synthesis</h3>
 
@@ -672,8 +668,8 @@ keeps pace, and the two totals finish equal.</p>
 
 <p>A parameterised dual-clock asynchronous FIFO was designed in Verilog-2001 and
 verified at three levels. In simulation it transferred 10,017 words with no
-mismatches across both clock ratios, with nine assertions passing and full
-functional coverage. Synthesis for the Zynq XC7Z020 produced no warnings and
+mismatches across both clock ratios, under two independent simulators that agree on
+the count, with every coverage point reached. Synthesis for the Zynq XC7Z020 produced no warnings and
 inferred no latches, and the CDC report confirmed both crossings at synchroniser
 depth two. On hardware, driven by two independent oscillators, it transferred
 286,176,459 words with zero errors while reaching both the full and empty
@@ -696,8 +692,8 @@ it, which is what gives the passing results their value.</p>
   <li>[2] R. Ginosar, &ldquo;Metastability and synchronizers: A tutorial,&rdquo;
       <em>IEEE Design &amp; Test of Computers</em>, vol. 28, no. 5, pp. 23&ndash;35,
       Sep./Oct. 2011.</li>
-  <li>[3] <em>IEEE Standard for SystemVerilog &mdash; Unified Hardware Design,
-      Specification, and Verification Language</em>, IEEE Std 1800-2017, 2018.</li>
+  <li>[3] <em>IEEE Standard Verilog Hardware Description Language</em>,
+      IEEE Std 1364-2001, 2001.</li>
   <li>[4] Xilinx Inc., &ldquo;Zynq-7000 SoC Data Sheet: Overview (DS190),&rdquo;
       Xilinx Technical Documentation, 2021.</li>
   <li>[5] AMD/Xilinx, &ldquo;PYNQ: Python productivity for Zynq &mdash; framework

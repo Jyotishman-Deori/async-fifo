@@ -4,36 +4,35 @@ Reading pref.tcl
 
 do run_experiment.do
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 14:32:20 on Aug 16,2026
+Start time: 21:07:13 on Aug 17,2026
 vlog -timescale 1ns/1ps -work work_exp ../rtl/sync_2ff.v 
 -- Compiling module sync_2ff
 
 Top level modules:
 	sync_2ff
-End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 21:07:13 on Aug 17,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 14:32:20 on Aug 16,2026
+Start time: 21:07:13 on Aug 17,2026
 vlog -timescale 1ns/1ps -work work_exp ../experiments/async_fifo_exp.v 
 -- Compiling module async_fifo_exp
 
 Top level modules:
 	async_fifo_exp
-End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 21:07:13 on Aug 17,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-Start time: 14:32:20 on Aug 16,2026
-vlog -sv -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.sv 
+Start time: 21:07:13 on Aug 17,2026
+vlog -timescale 1ns/1ps -work work_exp ../experiments/tb_cdc_experiment.v 
 -- Compiling module tb_cdc_experiment
 -- Compiling module cdc_case
 
 Top level modules:
 	tb_cdc_experiment
-End time: 14:32:20 on Aug 16,2026, Elapsed time: 0:00:00
+End time: 21:07:13 on Aug 17,2026, Elapsed time: 0:00:00
 Errors: 0, Warnings: 0
 vsim -c -voptargs=""+acc"" work_exp.tb_cdc_experiment 
-Start time: 14:32:20 on Aug 16,2026
-Loading sv_std.std
+Start time: 21:07:13 on Aug 17,2026
 Loading work_exp.tb_cdc_experiment
 Loading work_exp.cdc_case
 Loading work_exp.async_fifo_exp
@@ -47,26 +46,26 @@ Loading work_exp.sync_2ff
     skew   midflight     read    errors
     -------------------------------------
      0.0           0     4001         0
-     0.4         413     4001         0
-     1.0         895     4001         0
-     2.0        1840     4001         0
-     3.5        3234     4001         0
+     0.4         427     4001         0
+     1.0         899     4001         0
+     2.0        1816     4001         0
+     3.5        3270     4001         0
 
   BINARY POINTERS
     skew   midflight     read    errors
     -------------------------------------
      0.0           0     4001         0
-     0.4         649     4001         0
-     1.0        1391     4001         0
-     2.0        2505     4001         0
-     3.5        5785     3948      3513
+     0.4         637     4001         0
+     1.0        1401     4001         0
+     2.0        2525     4001         0
+     3.5        5691     3972      3664
 
   skew      per-bit step in ns; worst-case bus spread is 3x
   midflight times a domain latched the far pointer while it
             was still settling
   errors    words that came out wrong or were never written
 =============================================================
-** Note: $finish    : ../experiments/tb_cdc_experiment.sv(103)
-   Time: 115389950 ps  Iteration: 1  Instance: /tb_cdc_experiment
-End time: 14:32:21 on Aug 16,2026, Elapsed time: 0:00:01
+** Note: $finish    : ../experiments/tb_cdc_experiment.v(149)
+   Time: 115084850 ps  Iteration: 1  Instance: /tb_cdc_experiment
+End time: 21:07:15 on Aug 17,2026, Elapsed time: 0:00:02
 Errors: 0, Warnings: 0

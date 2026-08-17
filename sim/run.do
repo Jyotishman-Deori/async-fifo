@@ -2,11 +2,9 @@
 #   export PATH="/c/intelFPGA_lite/20.1/modelsim_ase/win32aloem:$PATH"
 #   cd sim && vsim -c -do run.do
 #
-# RTL is Verilog-2001 and compiles without -sv. The testbench is
-# SystemVerilog and needs it.
-#
-# ModelSim ASE has no SVA/covergroup support. Assertions and functional
-# coverage go through Vivado XSim, same as the MTP flow.
+# Everything here is Verilog-2001, so nothing is compiled with -sv. Checks
+# are procedural and coverage is counted by hand, because Verilog has neither
+# assertions nor covergroups.
 
 # -lib work, not a bare vdel -all: the bare form goes after whatever the
 # current library happens to be and fails with "unable to remove directory"
@@ -16,7 +14,7 @@ vlib work
 
 vlog -work work ../rtl/sync_2ff.v
 vlog -work work ../rtl/async_fifo.v
-vlog -sv -work work ../tb/tb_async_fifo.sv
+vlog -work work ../tb/tb_async_fifo.v
 
 vsim -c -voptargs="+acc" work.tb_async_fifo
 run -all

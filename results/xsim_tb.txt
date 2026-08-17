@@ -2,13 +2,11 @@ INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/jyoti/OneDrive/Desktop/asy
 INFO: [VRFC 10-311] analyzing module sync_2ff
 INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/rtl/async_fifo.v" into library work
 INFO: [VRFC 10-311] analyzing module async_fifo
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.sv" into library work
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.v" into library work
 INFO: [VRFC 10-311] analyzing module tb_async_fifo
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/async_fifo_sva.sv" into library work
-INFO: [VRFC 10-311] analyzing module async_fifo_sva
 Vivado Simulator 2020.2
 Copyright 1986-1999, 2001-2020 Xilinx, Inc. All Rights Reserved.
-Running: C:/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -debug typical -relax -timescale 1ns/1ps tb_async_fifo -s tb_snap 
+Running: C:/Xilinx/Vivado/2020.2/bin/unwrapped/win64.o/xelab.exe -debug typical -timescale 1ns/1ps tb_async_fifo -s tb_snap 
 Multi-threading is on. Using 14 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
@@ -17,7 +15,6 @@ Starting simulation data flow analysis
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling module work.sync_2ff(WIDTH=5)
-Compiling module work.async_fifo_sva_default
 Compiling module work.async_fifo_default
 Compiling module work.tb_async_fifo
 Built simulation snapshot tb_snap
@@ -28,7 +25,7 @@ Built simulation snapshot tb_snap
     ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 
 source C:/Users/jyoti/OneDrive/Desktop/async_fifo/sim/xsim.dir/tb_snap/webtalk/xsim_webtalk.tcl -notrace
-INFO: [Common 17-206] Exiting Webtalk at Sun Aug 16 14:32:03 2026...
+INFO: [Common 17-206] Exiting Webtalk at Mon Aug 17 21:07:27 2026...
 
 ****** xsim v2020.2 (64-bit)
   **** SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
@@ -45,35 +42,28 @@ run -all
 =========================================================
 
 -- phase 1: wclk 7 ns, rclk 11 ns  (write fast, read slow)
-   phase 1: 5013 words written, all 5013 read back and checked
+   phase 1: 5014 words written, all 5014 read back and checked
 
 -- phase 2: wclk 11 ns, rclk 7 ns  (write slow, read fast)
-   phase 2: 5002 words written, all 5002 read back and checked
+   phase 2: 5003 words written, all 5003 read back and checked
 
 =========================================================
  RESULTS
 =========================================================
-  words written              : 10015
-  words read and compared    : 10015
+  words written              : 10017
+  words read and compared    : 10017
   data mismatches            : 0
   overflows                  : 0
   underflows                 : 0
   undrained words            : 0
   ---- coverage ----
-  cycles with wfull high     : 12415
-  cycles with rempty high    : 12363
-  back-to-back writes        : 3031
-  concurrent read and write  : 3654
+  cycles with wfull high     : 12609
+  cycles with rempty high    : 12592
+  back-to-back writes        : 2996
+  concurrent read and write  : 3684
 ---------------------------------------------------------
  TEST PASSED
 =========================================================
-
----- functional coverage (bound checker) ----
-  write interface  : 100.0 %
-  read interface   : 100.0 %
-  occupancy        : 100.0 %
-  concurrent access: 100.0 %
----------------------------------------------
-$finish called at time : 275356500 ps : File "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.sv" Line 236
+$finish called at time : 276962500 ps : File "C:/Users/jyoti/OneDrive/Desktop/async_fifo/tb/tb_async_fifo.v" Line 296
 exit
-INFO: [Common 17-206] Exiting xsim at Sun Aug 16 14:32:09 2026...
+INFO: [Common 17-206] Exiting xsim at Mon Aug 17 21:07:35 2026...

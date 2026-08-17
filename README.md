@@ -1,8 +1,9 @@
 # Dual-Clock Asynchronous FIFO
 
 A FIFO that moves data between two clock domains that have no relationship to each
-other. RTL in Verilog-2001, verified with a SystemVerilog testbench: scoreboard,
-assertions and functional coverage.
+other. Everything is Verilog-2001: the design, the testbench and the hardware test
+harness. Checked with a randomised scoreboard, procedural protocol checks and coverage
+counters.
 
 Self-project. Jyotishman Deori (25M1186), M.Tech. Electrical Engineering
 (Electronic Systems), IIT Bombay.
@@ -11,8 +12,8 @@ I picked this after working on the AXI-Stream interfaces in my M.Tech project, w
 the PS and PL sides sit in different clock domains and I mostly got to rely on the
 handshake. I wanted to build the crossing itself rather than use one.
 
-**Status:** done, and running on hardware. RTL, testbench, assertions and synthesis all
-clean, plus 286 million words through the real thing on a PYNQ-Z2 with zero errors.
+**Status:** done, and running on hardware. RTL, testbench and synthesis all clean, plus
+286 million words through the real thing on a PYNQ-Z2 with zero errors.
 Numbers are in [Results](#results), raw transcripts in [`results/`](results/).
 
 There is a written-up version of all of this as a report:
@@ -80,14 +81,14 @@ module async_fifo #(
 Two files: `rtl/sync_2ff.v` for the synchroniser, `rtl/async_fifo.v` for everything
 else. The synchroniser is its own module mostly so it's obvious I didn't forget it.
 
-The design is Verilog-2001 and compiles without `-sv`. The testbench and the bound
-checker are SystemVerilog, because a scoreboard and covergroups in plain Verilog would
-be an exercise in stubbornness. Keeping the split at the RTL boundary also means the
-synthesisable half stays portable to tools that only take Verilog.
+Everything compiles without `-sv`, including the testbench. Verilog has no assertions
+and no covergroups, so the checks are procedural and the coverage points are counted by
+hand; the testbench reports them and refuses to call a run a pass if any of them was
+never reached.
 
 ```
 rtl/           the design, and the only thing that gets synthesised
-tb/            testbench, plus the bound SVA and covergroup checker
+tb/            scoreboard testbench, procedural checks, coverage counters
 sim/           ModelSim and XSim run scripts
 synth/         Vivado latch and CDC check
 hw/            the PYNQ-Z2 build: same FIFO, real clocks, real silicon
@@ -145,7 +146,7 @@ What has to pass before I'd call this done:
 - Scoreboard reports zero mismatches and data comes out in FIFO order
 - Works both ways round: fast write / slow read, and slow write / fast read
 - Random stalls on both interfaces, not a clean stream
-- Assertions never fire: no write when full, no read when empty
+- Protocol checks never fire: no overflow, no underflow, no undrained words
 - Coverage hits full, empty, simultaneous read and write, and back-to-back writes
 - Synthesis infers zero latches
 
@@ -183,7 +184,7 @@ and once it did, binary failed catastrophically while Gray never dropped a word.
 export PATH="/c/intelFPGA_lite/20.1/modelsim_ase/win32aloem:$PATH"
 cd sim && vsim -c -do run.do
 
-# same testbench plus assertions and functional coverage, Vivado XSim
+# the same testbench under a second simulator, Vivado XSim
 cd sim && ./run_xsim.sh
 
 # latch and CDC check
@@ -202,10 +203,9 @@ vivado -mode batch -source hw/run_hw_test.tcl
 python docs/make_pdf.py
 ```
 
-ModelSim ASE can't do SVA or covergroups, so assertions and functional coverage run in
-Vivado XSim, the same split I use in my M.Tech project. The checker lives in
-`tb/async_fifo_sva.sv` and is `bind`-ed onto the DUT rather than written inside it, so
-nothing verification-only ends up in the synthesisable RTL.
+The same testbench runs under both ModelSim and XSim. That is the point of running it
+twice: a design that passes on one simulator and fails on another usually has a race
+that the first tool happened to resolve in its favour. Both report the same counts.
 
 ---
 
@@ -222,15 +222,13 @@ ratios, and compared every one of them on the way out:
 | Data mismatches | 0 |
 | Overflows / underflows | 0 / 0 |
 | Words left unchecked | 0 |
-| Cycles spent full / empty | 12,678 / 12,419 |
-| Back-to-back writes | 3,025 |
-| Concurrent read and write | 3,546 |
+| Cycles spent full / empty | 12,579 / 12,611 |
+| Back-to-back writes | 2,991 |
+| Concurrent read and write | 3,630 |
 
-The same testbench under XSim with the assertions and covergroups bound on ran 10,015
-words, no assertion failures across the nine properties, and 100% on all four
-covergroups. The word counts differ by two between the simulators because the stimulus
-is randomised and the two implementations of `$urandom` don't produce the same stream
-from the same seed. Both transcripts are in `results/`.
+The same testbench under XSim reports exactly the same 10,017 words and the same zero
+mismatches, with the coverage counters landing within a few counts of the ModelSim run.
+Both transcripts are in `results/`.
 
 Synthesis for `xc7z020clg400-1`, out of context: 0 errors, 0 warnings, **0 latches**,
 28 slice LUTs (20 logic, 8 as distributed RAM) and 40 flip-flops. The 16x8 memory went
