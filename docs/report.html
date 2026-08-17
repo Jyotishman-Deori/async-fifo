@@ -264,7 +264,7 @@ and a synchroniser does not prevent multi-bit skew, so both are required.</p>
 <h3 class="sub">1.1 Objective</h3>
 
 <p>To design a parameterised dual-clock asynchronous FIFO in Verilog, verify it in
-simulation with a scoreboard and with assertions, confirm through synthesis that
+simulation with a scoreboard and procedural checks, confirm through synthesis that
 the implementation matches the intent, and demonstrate it running on an FPGA with
 two independent clock sources.</p>
 
@@ -679,8 +679,8 @@ conditions.</p>
 comparison. The extra pointer bit is what allows full and empty to be
 distinguished when the addresses are identical, and the full condition requires
 the top two Gray bits to be inverted rather than one. Deliberately introducing an
-error into that comparison confirmed that the testbench and the assertions detect
-it, which is what gives the passing results their value.</p>
+error into that comparison confirmed that the scoreboard and the occupancy check
+detect it, which is what gives the passing results their value.</p>
 
 <!-- ======================= REFERENCES ======================= -->
 <h2 class="sec">References</h2>
